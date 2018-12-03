@@ -14,6 +14,7 @@ type arangorepository struct {
 	sorder   driver.Collection
 }
 
+// NewOrderRepo acts as constructor for database
 func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRepository, error) {
 	var ar *arangorepository
 	sess, db, err := manager.NewSessionDb(connP)
@@ -31,7 +32,19 @@ func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRe
 }
 
 func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
-
+	m := &model.OrderDoc{}
+	r, err := ar.database.Get(orderGet)
+	if err != nil {
+		return m, err
+	}
+	if r.isEmpty() {
+		m.NotFound = true
+		return m, nil
+	}
+	if err := r.Read(m); err != nil {
+		return m, err
+	}
+	return m, nil
 }
 
 func (ar *arangorepository) AddOrder(no *order.NewOrder) (*model.OrderDoc, error) {

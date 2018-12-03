@@ -17,4 +17,9 @@ const (
 			items: @items
 		} INTO @@stock_order_collection RETURN NEW
 	`
+	orderGet = `
+		FOR sorder IN @@stock_order_collection
+			FILTER sorder._key == '%s'
+			RETURN sorder
+	`
 )
