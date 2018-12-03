@@ -22,4 +22,15 @@ const (
 			FILTER sorder._key == '%s'
 			RETURN sorder
 	`
+	orderUpd = `
+		UPDATE { _key: "%s" } WITH {
+			courier: @courier,
+			courier_account: @courier_account,
+			comments: @comments,
+			payment: @payment,
+			purchase_order_num: @purchase_order_num,
+			status: @status,
+			items: @items
+		} IN @@stock_order_collection
+	`
 )

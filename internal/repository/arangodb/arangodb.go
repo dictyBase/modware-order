@@ -91,7 +91,6 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	if err := r.Read(m); err != nil {
 		return m, err
 	}
-	// create order document
 	bindVars := map[string]interface(){
 		"@stock_order_collection": ar.sorder.Name(),
 		"courier":                 attr.Courier,
@@ -100,12 +99,9 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 		"payment":                 attr.Payment,
 		"purchase_order_num":      attr.PurchaseOrderNum,
 		"status":                  attr.Status,
-		"consumer":                attr.Consumer,
-		"payer":                   attr.Payer,
-		"purchaser":               attr.Purchaser,
 		"items":                   attr.Items,
 	}
-	rupd, err := ar.database.DoRun(orderIns, bindVars)
+	rupd, err := ar.database.DoRun(orderUpd, bindVars)
 	if err != nil {
 		return m, err
 	}
