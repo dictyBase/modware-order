@@ -91,7 +91,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	if err := r.Read(m); err != nil {
 		return m, err
 	}
-	bindVars := map[string]interface(){
+	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
 		"courier":                 attr.Courier,
 		"courier_account":         attr.CourierAccount,
