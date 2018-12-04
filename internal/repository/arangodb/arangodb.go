@@ -93,6 +93,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	}
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
+		"key":                     uo.Data.id,
 		"courier":                 attr.Courier,
 		"courier_account":         attr.CourierAccount,
 		"comments":                attr.Comments,

@@ -19,11 +19,11 @@ const (
 	`
 	orderGet = `
 		FOR sorder IN @@stock_order_collection
-			FILTER sorder._key == '%s'
+			FILTER sorder._key == @key
 			RETURN sorder
 	`
 	orderUpd = `
-		UPDATE { _key: "%s" } WITH {
+		UPDATE { _key: @key } WITH {
 			courier: @courier,
 			courier_account: @courier_account,
 			comments: @comments,
@@ -31,6 +31,6 @@ const (
 			purchase_order_num: @purchase_order_num,
 			status: @status,
 			items: @items
-		} IN @@stock_order_collection
+		} IN @@stock_order_collection RETURN NEW
 	`
 )
