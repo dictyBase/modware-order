@@ -1,6 +1,9 @@
 package arangodb
 
 import (
+	"fmt"
+	"strings"
+
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
@@ -36,7 +39,7 @@ func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
 	m := &model.OrderDoc{}
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
-		"key":                     id,
+		"key": id,
 	}
 	r, err := ar.database.GetRow(orderGet, bindVars)
 	if err != nil {
@@ -81,22 +84,27 @@ func (ar *arangorepository) AddOrder(no *order.NewOrder) (*model.OrderDoc, error
 
 // EditOrder updates an existing order
 func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, error) {
-	m := &model.AnnoDoc{}
+	m := &model.OrderDoc{}
 	attr := uo.Data.Attributes
 	// check if order exists
-	GetOrder(uo.Data.id)
-	bindVars := map[string]interface{}{
-		"@stock_order_collection": ar.sorder.Name(),
-		"key":                     uo.Data.id,
-		"courier":                 attr.Courier,
-		"courier_account":         attr.CourierAccount,
-		"comments":                attr.Comments,
-		"payment":                 attr.Payment,
-		"purchase_order_num":      attr.PurchaseOrderNum,
-		"status":                  attr.Status,
-		"items":                   attr.Items,
+	em, err := ar.GetOrder(uo.Data.id)
+	if err != nil {
+		return m, err
 	}
-	rupd, err := ar.database.DoRun(orderUpd, bindVars)
+	if em.NotFound {
+		m.NotFound = true
+		return m, nil
+	}
+	bindVars := getUpdatableBindParams(attr)
+	var bindParams []string
+	for k, _ := range bindVars {
+		bindParams = append(bindParams, fmt.Sprintf("%s: @%s", k, k))
+	}
+	orderUpdQ := fmt.Sprintf(orderUpd, strings.Join(params, ","))
+	bindVars["@stock_order_collection"] = ar.sorder.Name()
+	bindVars["key"] = uo.Data.Id
+
+	rupd, err := ar.database.DoRun(orderUpdQ, bindVars)
 	if err != nil {
 		return m, err
 	}
@@ -109,4 +117,30 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 // ListOrders provides a list of all orders
 func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.OrderDoc, error) {
 
+}
+
+func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
+	bindVars := make(map[string]interface{})
+	if len(attr.Courier) > 0 {
+		bindVars["courier"] = attr.Courier
+	}
+	if len(att.CourierAccount) > 0 {
+		bindVars["courier_account"] = attr.CourierAccount
+	}
+	if len(attr.Comments) > 0 {
+		bindVars["comments"] = attr.Comments
+	}
+	if len(attr.Payment) > 0 {
+		bindVars["payment"] = attr.Payment
+	}
+	if len(attr.PurchaseOrderNum) > 0 {
+		bindVars["purchase_order_num"] = attr.PurchaseOrderNum
+	}
+	if len(attr.Status) > 0 {
+		bindVars["status"] = attr.Status
+	}
+	if len(attr.Items) > 0 {
+		bindVars["items"] = attr.Items
+	}
+	return bindVars
 }
