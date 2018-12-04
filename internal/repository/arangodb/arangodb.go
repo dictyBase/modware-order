@@ -9,6 +9,7 @@ import (
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/dictyBase/modware-order/internal/repository"
+	"github.com/fatih/structs"
 )
 
 type arangorepository struct {
@@ -146,25 +147,14 @@ func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.Orde
 }
 
 func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
+	items := structs.New(attr)
 	bindVars := make(map[string]interface{})
-	if len(attr.Courier) > 0 {
-		bindVars["courier"] = attr.Courier
+
+	for _, k := range items.Fields() {
+		if !k.IsZero() {
+			bindVars[k.Value().(string)] = k
+		}
 	}
-	if len(attr.CourierAccount) > 0 {
-		bindVars["courier_account"] = attr.CourierAccount
-	}
-	if len(attr.Comments) > 0 {
-		bindVars["comments"] = attr.Comments
-	}
-	if len(attr.Payment) > 0 {
-		bindVars["payment"] = attr.Payment
-	}
-	if len(attr.PurchaseOrderNum) > 0 {
-		bindVars["purchase_order_num"] = attr.PurchaseOrderNum
-	}
-	bindVars["status"] = attr.Status
-	if len(attr.Items) > 0 {
-		bindVars["items"] = attr.Items
-	}
+
 	return bindVars
 }
