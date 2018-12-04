@@ -116,7 +116,33 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 
 // ListOrders provides a list of all orders
 func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.OrderDoc, error) {
-
+	var om []*model.OrderDoc
+	var stmt string
+	bindVars := map[string]interface{}{
+		"@stock_order_collection": ar.sorder.Name(),
+		"limit": limit + 1
+	}
+	if cursor  == 0 { // no cursor so return first set of result
+		stmt = orderList
+	} else {
+		bindVars["next_cursor"] = cursor
+		stmt = orderListWithCursor
+	}
+	rs, err := ar.database.SearchRows(stmt, bindVars)
+	if err != nil {
+		return am, err
+	}
+	if rs.IsEmpty() {
+		return am, nil
+	}
+	for rs.Scan() {
+		m := &model.OrderDoc{}
+		if err := rs.Read(m); err != nil {
+			return am, err
+		}
+		am = append(am, m)
+	}
+	return am, nil
 }
 
 func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {

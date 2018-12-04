@@ -27,4 +27,16 @@ const (
 			WITH { %s }
 			IN @@stock_order_collection RETURN NEW
 	`
+	orderList = `
+		FOR sorder IN @@stock_order_collection
+			SORT sorder.created_at DESC
+			LIMIT @limit
+			RETURN sorder
+	`
+	orderListWithCursor = `
+		FOR sorder in @@stock_order_collection
+			SORT sorder.created_at <= DATE_ISO8601(@next_cursor)
+			LIMIT @limit
+			RETURN sorder
+	`
 )
