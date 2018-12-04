@@ -100,7 +100,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	for k := range bindVars {
 		bindParams = append(bindParams, fmt.Sprintf("%s: @%s", k, k))
 	}
-	orderUpdQ := fmt.Sprintf(orderUpd, strings.Join(params, ","))
+	orderUpdQ := fmt.Sprintf(orderUpd, strings.Join(bindParams, ","))
 	bindVars["@stock_order_collection"] = ar.sorder.Name()
 	bindVars["key"] = uo.Data.Id
 
@@ -162,9 +162,7 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 	if len(attr.PurchaseOrderNum) > 0 {
 		bindVars["purchase_order_num"] = attr.PurchaseOrderNum
 	}
-	if len(attr.Status) > 0 {
-		bindVars["status"] = attr.Status
-	}
+	bindVars["status"] = attr.Status
 	if len(attr.Items) > 0 {
 		bindVars["items"] = attr.Items
 	}
