@@ -34,7 +34,11 @@ func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRe
 // GetOrder retrieves stock order from database
 func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
 	m := &model.OrderDoc{}
-	r, err := ar.database.Get(orderGet)
+	bindVars := map[string]interface{}{
+		"@stock_order_collection": ar.sorder.Name(),
+		"key":                     id,
+	}
+	r, err := ar.database.GetRow(orderGet, bindVars)
 	if err != nil {
 		return m, err
 	}
@@ -80,17 +84,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	m := &model.AnnoDoc{}
 	attr := uo.Data.Attributes
 	// check if order exists
-	r, err := ar.database.Get(orderGet)
-	if err != nil {
-		return m, err
-	}
-	if r.IsEmpty() {
-		m.NotFound = true
-		return m, nil
-	}
-	if err := r.Read(m); err != nil {
-		return m, err
-	}
+	GetOrder(uo.Data.id)
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
 		"key":                     uo.Data.id,
