@@ -26,7 +26,7 @@ func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRe
 	}
 	ar.sess = sess
 	ar.database = db
-	sorderc, err = db.Collection(coll)
+	sorderc, err := db.Collection(coll)
 	if err != nil {
 		return ar, err
 	}
@@ -39,13 +39,13 @@ func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
 	m := &model.OrderDoc{}
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
-		"key": id,
+		"key":                     id,
 	}
 	r, err := ar.database.GetRow(orderGet, bindVars)
 	if err != nil {
 		return m, err
 	}
-	if r.isEmpty() {
+	if r.IsEmpty() {
 		m.NotFound = true
 		return m, nil
 	}
@@ -87,7 +87,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	m := &model.OrderDoc{}
 	attr := uo.Data.Attributes
 	// check if order exists
-	em, err := ar.GetOrder(uo.Data.id)
+	em, err := ar.GetOrder(uo.Data.Id)
 	if err != nil {
 		return m, err
 	}
@@ -97,7 +97,7 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 	}
 	bindVars := getUpdatableBindParams(attr)
 	var bindParams []string
-	for k, _ := range bindVars {
+	for k := range bindVars {
 		bindParams = append(bindParams, fmt.Sprintf("%s: @%s", k, k))
 	}
 	orderUpdQ := fmt.Sprintf(orderUpd, strings.Join(params, ","))
@@ -120,9 +120,9 @@ func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.Orde
 	var stmt string
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
-		"limit": limit + 1
+		"limit":                   limit + 1,
 	}
-	if cursor  == 0 { // no cursor so return first set of result
+	if cursor == 0 { // no cursor so return first set of result
 		stmt = orderList
 	} else {
 		bindVars["next_cursor"] = cursor
@@ -130,19 +130,19 @@ func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.Orde
 	}
 	rs, err := ar.database.SearchRows(stmt, bindVars)
 	if err != nil {
-		return am, err
+		return om, err
 	}
 	if rs.IsEmpty() {
-		return am, nil
+		return om, nil
 	}
 	for rs.Scan() {
 		m := &model.OrderDoc{}
 		if err := rs.Read(m); err != nil {
-			return am, err
+			return om, err
 		}
-		am = append(am, m)
+		om = append(om, m)
 	}
-	return am, nil
+	return om, nil
 }
 
 func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
@@ -150,7 +150,7 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 	if len(attr.Courier) > 0 {
 		bindVars["courier"] = attr.Courier
 	}
-	if len(att.CourierAccount) > 0 {
+	if len(attr.CourierAccount) > 0 {
 		bindVars["courier_account"] = attr.CourierAccount
 	}
 	if len(attr.Comments) > 0 {
