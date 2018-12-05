@@ -61,7 +61,7 @@ func (s *OrderService) GetOrder(ctx context.Context, r *order.OrderId) (*order.O
 			Comments:         m.Comments,
 			Payment:          m.Payment,
 			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           m.Status,
+			Status:           statusToEnum(m.Status),
 			Consumer:         m.Consumer,
 			Payer:            m.Payer,
 			Purchaser:        m.Purchaser,
@@ -95,7 +95,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, r *order.NewOrder) (*ord
 			Comments:         m.Comments,
 			Payment:          m.Payment,
 			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           m.Status,
+			Status:           statusToEnum(m.Status),
 			Consumer:         m.Consumer,
 			Payer:            m.Payer,
 			Purchaser:        m.Purchaser,
@@ -130,7 +130,7 @@ func (s *OrderService) UpdateOrder(ctx context.Context, r *order.OrderUpdate) (*
 			Comments:         m.Comments,
 			Payment:          m.Payment,
 			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           m.Status,
+			Status:           statusToEnum(m.Status),
 			Consumer:         m.Consumer,
 			Payer:            m.Payer,
 			Purchaser:        m.Purchaser,
@@ -165,7 +165,7 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 					Comments:         m.Comments,
 					Payment:          m.Payment,
 					PurchaseOrderNum: m.PurchaseOrderNum,
-					Status:           m.Status,
+					Status:           statusToEnum(m.Status),
 					Consumer:         m.Consumer,
 					Payer:            m.Payer,
 					Purchaser:        m.Purchaser,
@@ -194,4 +194,18 @@ func genNextCursorVal(ocd *order.OrderCollection_Data) int64 {
 		64,
 	)
 	return tint / 1000000
+}
+
+func statusToEnum(status string) order.OrderStatus {
+	switch status {
+	case "Shipped":
+		return order.OrderStatus_Shipped
+	case "Cancelled":
+		return order.OrderStatus_Cancelled
+	case "Growing":
+		return order.OrderStatus_Growing
+	default:
+		break
+	}
+	return order.OrderStatus_In_preparation
 }

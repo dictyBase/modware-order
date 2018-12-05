@@ -66,7 +66,7 @@ func (ar *arangorepository) AddOrder(no *order.NewOrder) (*model.OrderDoc, error
 		"comments":                attr.Comments,
 		"payment":                 attr.Payment,
 		"purchase_order_num":      attr.PurchaseOrderNum,
-		"status":                  attr.Status,
+		"status":                  attr.Status.String(),
 		"consumer":                attr.Consumer,
 		"payer":                   attr.Payer,
 		"purchaser":               attr.Purchaser,
