@@ -152,7 +152,7 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 
 	for _, k := range fields {
 		if !k.IsZero() {
-			bindVars[k.Value().(string)] = k
+			bindVars[k.Name()] = k.Value().(string)
 		}
 	}
 
