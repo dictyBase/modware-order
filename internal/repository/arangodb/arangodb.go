@@ -147,10 +147,10 @@ func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.Orde
 }
 
 func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
-	items := structs.New(attr)
+	fields := structs.Fields(attr)
 	bindVars := make(map[string]interface{})
 
-	for _, k := range items.Fields() {
+	for _, k := range fields {
 		if !k.IsZero() {
 			bindVars[k.Value().(string)] = k
 		}
