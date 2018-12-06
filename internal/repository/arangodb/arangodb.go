@@ -19,7 +19,7 @@ type arangorepository struct {
 
 // NewOrderRepo acts as constructor for database
 func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRepository, error) {
-	var ar *arangorepository
+	ar := &arangorepository{}
 	sess, db, err := manager.NewSessionDb(connP)
 	if err != nil {
 		return ar, err

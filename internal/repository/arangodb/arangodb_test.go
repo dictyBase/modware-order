@@ -10,14 +10,31 @@ import (
 	driver "github.com/arangodb/go-driver"
 	"github.com/dictyBase/apihelpers/aphdocker"
 	manager "github.com/dictyBase/arangomanager"
+	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 )
 
 var ahost, aport, auser, apass, adb string
 var coll driver.Collection
 var collection = "stock_order"
 
+func newOrder(id string) *order.NewOrderAttributes {
+	return &order.NewOrderAttributes{
+		Courier:  "FedEx",
+		Comments: "This is a test comment",
+		Payment:  "Credit card",
+	}
+}
+
 func TestMain(m *testing.M) {
+	if len(os.Getenv("DOCKER_HOST")) == 0 {
+		os.Setenv("DOCKER_HOST", "unix:///var/run/docker.sock")
+	}
+	if len(os.Getenv("DOCKER_API_VERSION")) == 0 {
+		os.Setenv("DOCKER_API_VERSION", "1.35")
+	}
+
 	adocker, err := aphdocker.NewArangoDockerWithImage("arangodb:3.3.19")
+	adocker.Debug = true
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
@@ -51,14 +68,15 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetOrder(t *testing.T) {
-	p, _ := strconv.Atoi(aport)
+	// convert port string to int
+	port, _ := strconv.Atoi(aport)
 
 	connP := &manager.ConnectParams{
 		User:     auser,
 		Pass:     apass,
 		Database: adb,
 		Host:     ahost,
-		Port:     p,
+		Port:     port,
 		Istls:    false,
 	}
 	_, err := NewOrderRepo(connP, collection)
