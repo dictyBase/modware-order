@@ -26,7 +26,7 @@ func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRe
 	}
 	ar.sess = sess
 	ar.database = db
-	sorderc, err := db.Collection(coll)
+	sorderc, err := db.FindOrCreateCollection(coll, &driver.CreateCollectionOptions{})
 	if err != nil {
 		return ar, err
 	}
