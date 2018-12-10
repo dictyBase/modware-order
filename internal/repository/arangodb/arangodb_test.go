@@ -83,7 +83,7 @@ func TestAddOrder(t *testing.T) {
 	assert.Equal(m.Comments, no.Data.Attributes.Comments, "should match the comments")
 	assert.Equal(m.Payment, no.Data.Attributes.Payment, "should match the payment")
 	assert.Equal(m.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	// assert.Equal(m.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(m.Status, no.Data.Attributes.Status, "should match the status")
 	assert.Equal(m.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
 	assert.Equal(m.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(m.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
@@ -113,7 +113,7 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Comments, no.Data.Attributes.Comments, "should match the comments")
 	assert.Equal(g.Payment, no.Data.Attributes.Payment, "should match the payment")
 	assert.Equal(g.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	// assert.Equal(g.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(g.Status, no.Data.Attributes.Status, "should match the status")
 	assert.Equal(g.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
@@ -153,7 +153,7 @@ func TestEditOrder(t *testing.T) {
 	// tests to make sure updated data matches passed in data
 	assert.Equal(e.Courier, testData.Data.Attributes.Courier, "should match the new courier")
 	assert.Equal(e.Comments, testData.Data.Attributes.Comments, "should match the new comments")
-	// assert.Equal(e.Status, testData.Data.Attributes.Status, "should match the new status")
+	assert.Equal(e.Status, testData.Data.Attributes.Status, "should match the new status")
 
 	// get the recently modified order so we can compare
 	g, err := repo.GetOrder(m.Key)
@@ -165,6 +165,26 @@ func TestEditOrder(t *testing.T) {
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
 }
 
-// func TestListOrders(t *testing.T) {
-
-// }
+func TestListOrders(t *testing.T) {
+	connP := getConnectParams()
+	repo, err := NewOrderRepo(connP, collection)
+	if err != nil {
+		t.Fatalf("error in connecting to order repository %s", err)
+	}
+	no := newTestOrder()
+	// add 15 new test orders
+	i := 1
+	for i <= 15 {
+		repo.AddOrder(no)
+		if err != nil {
+			t.Fatalf("error in adding order %s", err)
+		}
+		i = i + 1
+	}
+	lo, err := repo.ListOrders(0, 10)
+	if err != nil {
+		t.Fatalf("error in getting all orders %s", err)
+	}
+	assert := assert.New(t)
+	assert.Equal(len(lo), 11, "should match the provided limit number + 1")
+}
