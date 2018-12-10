@@ -120,9 +120,50 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
 }
 
-// func TestEditOrder(t *testing.T) {
+func TestEditOrder(t *testing.T) {
+	connP := getConnectParams()
+	repo, err := NewOrderRepo(connP, collection)
+	if err != nil {
+		t.Fatalf("error in connecting to order repository %s", err)
+	}
+	no := newTestOrder()
+	// add new test order
+	m, err := repo.AddOrder(no)
+	if err != nil {
+		t.Fatalf("error in adding order %s", err)
+	}
+	// set the content to update
+	testData := &order.OrderUpdate{
+		Data: &order.OrderUpdate_Data{
+			Type: "order",
+			Id:   m.Key,
+			Attributes: &order.OrderUpdateAttributes{
+				Courier:  "UPS",
+				Comments: "This is an updated test comment",
+				Status:   1, // "Growing"
+			},
+		},
+	}
+	// edit test order by the key/ID of added test order
+	e, err := repo.EditOrder(testData)
+	if err != nil {
+		t.Fatalf("error in editing order: %s", err)
+	}
+	assert := assert.New(t)
+	// tests to make sure updated data matches passed in data
+	assert.Equal(e.Courier, testData.Data.Attributes.Courier, "should match the new courier")
+	assert.Equal(e.Comments, testData.Data.Attributes.Comments, "should match the new comments")
+	// assert.Equal(e.Status, testData.Data.Attributes.Status, "should match the new status")
 
-// }
+	// get the recently modified order so we can compare
+	g, err := repo.GetOrder(m.Key)
+	if err != nil {
+		t.Fatalf("error in getting order: %s", err)
+	}
+	// make sure existing data wasn't overwritten by update
+	assert.Equal(e.CourierAccount, g.CourierAccount, "should match the already existing courier account")
+	assert.Equal(e.Courier, g.Courier, "should match the new courier")
+}
 
 // func TestListOrders(t *testing.T) {
 
