@@ -26,7 +26,7 @@ func getConnectParams() *manager.ConnectParams {
 	}
 }
 
-func newOrder() *order.NewOrder {
+func newTestOrder() *order.NewOrder {
 	return &order.NewOrder{
 		Data: &order.NewOrder_Data{
 			Type: "order",
@@ -37,6 +37,10 @@ func newOrder() *order.NewOrder {
 				Payment:          "Credit card",
 				PurchaseOrderNum: "38975932199",
 				Status:           0, // "In_preparation"
+				Consumer:         "art@vandelayindustries.com",
+				Payer:            "dr.van.nostrand@gmail.com",
+				Purchaser:        "dr.van.nostrand@gmail.com",
+				Items:            []string{"DBS2109858", "DBP8349822"},
 			},
 		},
 	}
@@ -68,7 +72,7 @@ func TestAddOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
-	no := newOrder()
+	no := newTestOrder()
 	m, err := repo.AddOrder(no)
 	if err != nil {
 		t.Fatalf("error in adding order %s", err)
@@ -79,16 +83,42 @@ func TestAddOrder(t *testing.T) {
 	assert.Equal(m.Comments, no.Data.Attributes.Comments, "should match the comments")
 	assert.Equal(m.Payment, no.Data.Attributes.Payment, "should match the payment")
 	assert.Equal(m.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	assert.Equal(m.Status, no.Data.Attributes.Status, "should match the status")
+	// assert.Equal(m.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(m.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
+	assert.Equal(m.Payer, no.Data.Attributes.Payer, "should match the payer")
+	assert.Equal(m.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
+	assert.Equal(m.Items, no.Data.Attributes.Items, "should match the items")
 }
 
-// func TestGetOrder(t *testing.T) {
-// 	connP := getConnectParams()
-// 	_, err := NewOrderRepo(connP, collection)
-// 	if err != nil {
-// 		t.Fatalf("error in connecting to data source %s", err)
-// 	}
-// }
+func TestGetOrder(t *testing.T) {
+	connP := getConnectParams()
+	repo, err := NewOrderRepo(connP, collection)
+	if err != nil {
+		t.Fatalf("error in connecting to order repository %s", err)
+	}
+	no := newTestOrder()
+	// add new test order
+	m, err := repo.AddOrder(no)
+	if err != nil {
+		t.Fatalf("error in adding order %s", err)
+	}
+	// get test order by the key/ID of added test order
+	g, err := repo.GetOrder(m.Key)
+	if err != nil {
+		t.Fatalf("error in getting order %s", err)
+	}
+	assert := assert.New(t)
+	assert.Equal(g.Courier, no.Data.Attributes.Courier, "should match the courier")
+	assert.Equal(g.CourierAccount, no.Data.Attributes.CourierAccount, "should match the courier account")
+	assert.Equal(g.Comments, no.Data.Attributes.Comments, "should match the comments")
+	assert.Equal(g.Payment, no.Data.Attributes.Payment, "should match the payment")
+	assert.Equal(g.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
+	// assert.Equal(g.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(g.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
+	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
+	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
+	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
+}
 
 // func TestEditOrder(t *testing.T) {
 
