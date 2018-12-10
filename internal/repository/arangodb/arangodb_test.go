@@ -45,11 +45,11 @@ func newOrder() *order.NewOrder {
 func TestMain(m *testing.M) {
 	ta, err := testarango.NewTestArangoFromEnv(true)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("unable to construct new TestArango instance %s", err)
 	}
 	dbh, err := ta.DB(ta.Database)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("unable to get database %s", err)
 	}
 	dbh.CreateCollection(collection, &driver.CreateCollectionOptions{})
 	if err != nil {
