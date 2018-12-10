@@ -173,13 +173,11 @@ func TestListOrders(t *testing.T) {
 	}
 	no := newTestOrder()
 	// add 15 new test orders
-	i := 1
-	for i <= 15 {
-		repo.AddOrder(no)
+	for i := 1; i <= 15; i++ {
+		_, err := repo.AddOrder(no)
 		if err != nil {
 			t.Fatalf("error in adding order %s", err)
 		}
-		i = i + 1
 	}
 	lo, err := repo.ListOrders(0, 10)
 	if err != nil {
@@ -187,4 +185,10 @@ func TestListOrders(t *testing.T) {
 	}
 	assert := assert.New(t)
 	assert.Equal(len(lo), 11, "should match the provided limit number + 1")
+
+	for _, order := range lo {
+		assert.Equal(order.Courier, "FedEx", "should match the courier")
+		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
+		assert.NotEqual(order.Key, "", "should not have empty key/id")
+	}
 }
