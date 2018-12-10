@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var ta *testarango.TestArango
+var gta *testarango.TestArango
 var collection = "stock_orders"
 
 func getConnectParams() *manager.ConnectParams {
 	return &manager.ConnectParams{
-		User:     ta.User,
-		Pass:     ta.Pass,
-		Database: ta.Database,
-		Host:     ta.Host,
-		Port:     ta.Port,
+		User:     gta.User,
+		Pass:     gta.Pass,
+		Database: gta.Database,
+		Host:     gta.Host,
+		Port:     gta.Port,
 		Istls:    false,
 	}
 }
@@ -47,19 +47,17 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("unable to construct new TestArango instance %s", err)
 	}
+	gta = ta
 	dbh, err := ta.DB(ta.Database)
 	if err != nil {
 		log.Fatalf("unable to get database %s", err)
 	}
-	dbh.CreateCollection(collection, &driver.CreateCollectionOptions{})
+	_, err = dbh.CreateCollection(collection, &driver.CreateCollectionOptions{})
 	if err != nil {
 		log.Fatalf("unable to create collection %s %s", collection, err)
 	}
-	// clean up the database at the end
-	defer dbh.Drop()
-
 	code := m.Run()
-	os.Exit(code)
+	os.Exit()
 }
 
 func TestAddOrder(t *testing.T) {
