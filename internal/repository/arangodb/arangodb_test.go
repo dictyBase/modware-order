@@ -144,7 +144,7 @@ func TestEditOrder(t *testing.T) {
 			},
 		},
 	}
-	// edit test order by the key/ID of added test order
+	// edit test order by providing updated data
 	e, err := repo.EditOrder(testData)
 	if err != nil {
 		t.Fatalf("error in editing order: %s", err)
@@ -161,7 +161,7 @@ func TestEditOrder(t *testing.T) {
 		t.Fatalf("error in getting order: %s", err)
 	}
 	// make sure existing data wasn't overwritten by update
-	assert.Equal(e.CourierAccount, g.CourierAccount, "should match the already existing courier account")
+	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
 }
 
