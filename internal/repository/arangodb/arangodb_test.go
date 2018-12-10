@@ -54,10 +54,12 @@ func TestMain(m *testing.M) {
 	}
 	_, err = dbh.CreateCollection(collection, &driver.CreateCollectionOptions{})
 	if err != nil {
+		dbh.Drop()
 		log.Fatalf("unable to create collection %s %s", collection, err)
 	}
 	code := m.Run()
-	os.Exit()
+	dbh.Drop()
+	os.Exit(code)
 }
 
 func TestAddOrder(t *testing.T) {
