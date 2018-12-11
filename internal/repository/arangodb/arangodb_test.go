@@ -72,6 +72,7 @@ func TestAddOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
+	defer repo.ClearOrders()
 	no := newTestOrder()
 	m, err := repo.AddOrder(no)
 	if err != nil {
@@ -97,6 +98,7 @@ func TestGetOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
+	defer repo.ClearOrders()
 	no := newTestOrder()
 	// add new test order
 	m, err := repo.AddOrder(no)
@@ -141,6 +143,7 @@ func TestEditOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
+	defer repo.ClearOrders()
 	no := newTestOrder()
 	// add new test order
 	m, err := repo.AddOrder(no)
@@ -203,6 +206,7 @@ func TestListOrders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
+	defer repo.ClearOrders()
 	no := newTestOrder()
 	// add 15 new test orders
 	for i := 1; i <= 15; i++ {

@@ -12,4 +12,5 @@ type OrderRepository interface {
 	AddOrder(no *order.NewOrder) (*model.OrderDoc, error)
 	EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, error)
 	ListOrders(cursor int64, limit int64) ([]*model.OrderDoc, error)
+	ClearOrders() error
 }

@@ -1,6 +1,7 @@
 package arangodb
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -167,4 +168,12 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 		bindVars["items"] = attr.Items
 	}
 	return bindVars
+}
+
+// ClearOrders clears all orders from the repository datasource
+func (ar *arangorepository) ClearOrders() error {
+	if err := ar.sorder.Truncate(context.Background()); err != nil {
+		return err
+	}
+	return nil
 }
