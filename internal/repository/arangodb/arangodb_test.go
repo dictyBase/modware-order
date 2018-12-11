@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
@@ -215,16 +216,44 @@ func TestListOrders(t *testing.T) {
 			t.Fatalf("error in adding order %s", err)
 		}
 	}
-	lo, err := repo.ListOrders(0, 10)
+	lo, err := repo.ListOrders(0, 4)
 	if err != nil {
-		t.Fatalf("error in getting all orders %s", err)
+		t.Fatalf("error in getting first five orders %s", err)
 	}
 	assert := assert.New(t)
-	assert.Equal(len(lo), 11, "should match the provided limit number + 1")
+	assert.Equal(len(lo), 5, "should match the provided limit number + 1")
 
 	for _, order := range lo {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
 		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
+	t.Log("CreatedAt for last item in list", lo[4].CreatedAt)
+	ti := lo[4].CreatedAt.Unix()
+	t.Log("CreatedAt numeric timestamp: ", ti)
+	t.Log("Timestamp converted back from unix: ", time.Unix(ti, 0))
+
+	lo2, err := repo.ListOrders(ti, 4)
+	if err != nil {
+		t.Fatalf("error in getting orders 6-10 %s", err)
+	}
+	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
+	for _, order := range lo2 {
+		t.Log(order.CreatedAt)
+	}
+
+	ti2 := lo2[4].CreatedAt.Unix()
+	lo3, err := repo.ListOrders(ti2, 4)
+	if err != nil {
+		t.Fatalf("error in getting last five orders %s", err)
+	}
+	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
+	for _, order := range lo3 {
+		t.Log(order.CreatedAt)
+	}
+
+	// TODOS
+	// 1) Diversify the data being added (don't just post same order 15 times)
+	// 2) Verify items are sorted by date (tests AQL statement)
+	// 3) Test the different cursor variations
 }
