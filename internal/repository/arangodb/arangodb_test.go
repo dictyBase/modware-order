@@ -119,7 +119,10 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
+	assert.Equal(len(g.Items), 2, "should match length of two items")
 	assert.NotEmpty(g.Key, "should not have empty key/id")
+	assert.True(m.CreatedAt.Equal(g.CreatedAt), "should match created time of order")
+	assert.True(m.UpdatedAt.Equal(g.UpdatedAt), "should match updated time of order")
 
 	ne, err := repo.GetOrder("1")
 	if err != nil {
@@ -175,6 +178,7 @@ func TestEditOrder(t *testing.T) {
 	// make sure existing data wasn't overwritten by update
 	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
+	assert.NotEqual(g.Courier, m.Courier, "should not match the already existing courier")
 
 	// set data with nonexistent ID
 	ed := &order.OrderUpdate{
