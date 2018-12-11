@@ -88,6 +88,7 @@ func TestAddOrder(t *testing.T) {
 	assert.Equal(m.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(m.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.Equal(m.Items, no.Data.Attributes.Items, "should match the items")
+	assert.NotEmpty(m.Key, "should not have empty key/id")
 }
 
 func TestGetOrder(t *testing.T) {
@@ -118,6 +119,7 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
+	assert.NotEmpty(g.Key, "should not have empty key/id")
 
 	ne, err := repo.GetOrder("1")
 	if err != nil {
@@ -157,7 +159,7 @@ func TestEditOrder(t *testing.T) {
 	// edit test order by providing updated data
 	e, err := repo.EditOrder(testData)
 	if err != nil {
-		t.Fatalf("error in editing order: %s", err)
+		t.Fatalf("error in editing order %s with ID %s", m.Key, err)
 	}
 	assert := assert.New(t)
 	// tests to make sure updated data matches passed in data
@@ -168,25 +170,22 @@ func TestEditOrder(t *testing.T) {
 	// get the recently modified order so we can compare
 	g, err := repo.GetOrder(m.Key)
 	if err != nil {
-		t.Fatalf("error in getting order: %s", err)
+		t.Fatalf("error in getting order %s with ID %s", m.Key, err)
 	}
 	// make sure existing data wasn't overwritten by update
 	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
 
-	// set data with wrong ID
+	// set data with nonexistent ID
 	ed := &order.OrderUpdate{
 		Data: &order.OrderUpdate_Data{
 			Type: "order",
 			Id:   "1",
 			Attributes: &order.OrderUpdateAttributes{
-				Courier:  "UPS",
 				Comments: "This is an updated test comment",
-				Status:   1, // "Growing"
 			},
 		},
 	}
-
 	ee, err := repo.EditOrder(ed)
 	if err != nil {
 		t.Fatalf("error in editing order: %s", err)
@@ -218,6 +217,6 @@ func TestListOrders(t *testing.T) {
 	for _, order := range lo {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
 		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
-		assert.NotEqual(order.Key, "", "should not have empty key/id")
+		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 }
