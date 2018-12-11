@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
@@ -216,6 +215,7 @@ func TestListOrders(t *testing.T) {
 			t.Fatalf("error in adding order %s", err)
 		}
 	}
+	// get first five results
 	lo, err := repo.ListOrders(0, 4)
 	if err != nil {
 		t.Fatalf("error in getting first five orders %s", err)
@@ -228,32 +228,45 @@ func TestListOrders(t *testing.T) {
 		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
-	t.Log("CreatedAt for last item in list", lo[4].CreatedAt)
-	ti := lo[4].CreatedAt.Unix()
-	t.Log("CreatedAt numeric timestamp: ", ti)
-	t.Log("Timestamp converted back from unix: ", time.Unix(ti, 0))
+	// compare timestamps for first two results
+	if lo[1].CreatedAt.UnixNano() > lo[0].CreatedAt.UnixNano() {
+		t.Fatalf("the created_at date of the second item should be older than the first item")
+	}
+	// convert fifth result to numeric timestamp in milliseconds
+	// so we can use this as cursor
+	ti := lo[4].CreatedAt.UnixNano() / 1000000
 
+	// get next five results (6-10)
 	lo2, err := repo.ListOrders(ti, 4)
 	if err != nil {
 		t.Fatalf("error in getting orders 6-10 %s", err)
 	}
 	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
 	for _, order := range lo2 {
-		t.Log(order.CreatedAt)
+		assert.Equal(order.Courier, "FedEx", "should match the courier")
+		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
+		assert.NotEmpty(order.Key, "should not have empty key/id")
+	}
+	// compare timestamps for first two results
+	if lo2[1].CreatedAt.UnixNano() > lo2[0].CreatedAt.UnixNano() {
+		t.Fatalf("the created_at date of the second item should be older than the first item")
 	}
 
-	ti2 := lo2[4].CreatedAt.Unix()
+	// convert tenth result to numeric timestamp
+	ti2 := lo2[4].CreatedAt.UnixNano() / 1000000
+	// get last five results (11-15)
 	lo3, err := repo.ListOrders(ti2, 4)
 	if err != nil {
 		t.Fatalf("error in getting last five orders %s", err)
 	}
 	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
 	for _, order := range lo3 {
-		t.Log(order.CreatedAt)
+		assert.Equal(order.Courier, "FedEx", "should match the courier")
+		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
+		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
-
-	// TODOS
-	// 1) Diversify the data being added (don't just post same order 15 times)
-	// 2) Verify items are sorted by date (tests AQL statement)
-	// 3) Test the different cursor variations
+	// compare timestamps for first two results
+	if lo3[1].CreatedAt.UnixNano() > lo3[0].CreatedAt.UnixNano() {
+		t.Fatalf("the created_at date of the second item should be older than the first item")
+	}
 }
