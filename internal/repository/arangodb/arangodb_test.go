@@ -105,7 +105,7 @@ func TestGetOrder(t *testing.T) {
 	// get test order by the key/ID of added test order
 	g, err := repo.GetOrder(m.Key)
 	if err != nil {
-		t.Fatalf("error in getting order %s", err)
+		t.Fatalf("error in getting order %s with ID %s", m.Key, err)
 	}
 	assert := assert.New(t)
 	assert.Equal(g.Courier, no.Data.Attributes.Courier, "should match the courier")
@@ -118,6 +118,16 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
+
+	ne, err := repo.GetOrder("1")
+	if err != nil {
+		t.Fatalf(
+			"error in fetching order %s with ID %s",
+			"1",
+			err,
+		)
+	}
+	assert.True(ne.NotFound, "entry should not exist")
 }
 
 func TestEditOrder(t *testing.T) {
@@ -163,6 +173,25 @@ func TestEditOrder(t *testing.T) {
 	// make sure existing data wasn't overwritten by update
 	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
+
+	// set data with wrong ID
+	ed := &order.OrderUpdate{
+		Data: &order.OrderUpdate_Data{
+			Type: "order",
+			Id:   "1",
+			Attributes: &order.OrderUpdateAttributes{
+				Courier:  "UPS",
+				Comments: "This is an updated test comment",
+				Status:   1, // "Growing"
+			},
+		},
+	}
+
+	ee, err := repo.EditOrder(ed)
+	if err != nil {
+		t.Fatalf("error in editing order: %s", err)
+	}
+	assert.True(ee.NotFound, "entry should not exist")
 }
 
 func TestListOrders(t *testing.T) {
