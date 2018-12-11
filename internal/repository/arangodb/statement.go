@@ -35,7 +35,8 @@ const (
 	`
 	orderListWithCursor = `
 		FOR sorder in @@stock_order_collection
-			SORT sorder.created_at <= DATE_ISO8601(@next_cursor)
+			FILTER sorder.created_at <= DATE_ISO8601(@next_cursor)
+			SORT sorder.created_at DESC
 			LIMIT @limit
 			RETURN sorder
 	`
