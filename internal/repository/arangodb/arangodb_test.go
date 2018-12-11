@@ -83,7 +83,7 @@ func TestAddOrder(t *testing.T) {
 	assert.Equal(m.Comments, no.Data.Attributes.Comments, "should match the comments")
 	assert.Equal(m.Payment, no.Data.Attributes.Payment, "should match the payment")
 	assert.Equal(m.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	assert.Equal(m.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(m.Status, no.Data.Attributes.Status.String(), "should match the status")
 	assert.Equal(m.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
 	assert.Equal(m.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(m.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
@@ -113,7 +113,7 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Comments, no.Data.Attributes.Comments, "should match the comments")
 	assert.Equal(g.Payment, no.Data.Attributes.Payment, "should match the payment")
 	assert.Equal(g.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	assert.Equal(g.Status, no.Data.Attributes.Status, "should match the status")
+	assert.Equal(g.Status, no.Data.Attributes.Status.String(), "should match the status")
 	assert.Equal(g.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
@@ -163,7 +163,7 @@ func TestEditOrder(t *testing.T) {
 	// tests to make sure updated data matches passed in data
 	assert.Equal(e.Courier, testData.Data.Attributes.Courier, "should match the new courier")
 	assert.Equal(e.Comments, testData.Data.Attributes.Comments, "should match the new comments")
-	assert.Equal(e.Status, testData.Data.Attributes.Status, "should match the new status")
+	assert.Equal(e.Status, testData.Data.Attributes.Status.String(), "should match the new status")
 
 	// get the recently modified order so we can compare
 	g, err := repo.GetOrder(m.Key)

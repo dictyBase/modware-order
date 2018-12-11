@@ -162,7 +162,7 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 	if len(attr.PurchaseOrderNum) > 0 {
 		bindVars["purchase_order_num"] = attr.PurchaseOrderNum
 	}
-	bindVars["status"] = attr.Status
+	bindVars["status"] = attr.Status.String()
 	if len(attr.Items) > 0 {
 		bindVars["items"] = attr.Items
 	}
