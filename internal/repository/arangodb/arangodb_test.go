@@ -1,9 +1,12 @@
 package arangodb
 
 import (
+	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
@@ -26,7 +29,7 @@ func getConnectParams() *manager.ConnectParams {
 	}
 }
 
-func newTestOrder() *order.NewOrder {
+func newTestOrder(consumer string) *order.NewOrder {
 	return &order.NewOrder{
 		Data: &order.NewOrder_Data{
 			Type: "order",
@@ -37,7 +40,7 @@ func newTestOrder() *order.NewOrder {
 				Payment:          "Credit card",
 				PurchaseOrderNum: "38975932199",
 				Status:           order.OrderStatus_In_preparation,
-				Consumer:         "art@vandelayindustries.com",
+				Consumer:         consumer,
 				Payer:            "dr.van.nostrand@gmail.com",
 				Purchaser:        "dr.van.nostrand@gmail.com",
 				Items:            []string{"DBS2109858", "DBP8349822"},
@@ -73,7 +76,7 @@ func TestAddOrder(t *testing.T) {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
 	defer repo.ClearOrders()
-	no := newTestOrder()
+	no := newTestOrder("art@vandelayindustries.com")
 	m, err := repo.AddOrder(no)
 	if err != nil {
 		t.Fatalf("error in adding order %s", err)
@@ -99,7 +102,7 @@ func TestGetOrder(t *testing.T) {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
 	defer repo.ClearOrders()
-	no := newTestOrder()
+	no := newTestOrder("art@vandelayindustries.com")
 	// add new test order
 	m, err := repo.AddOrder(no)
 	if err != nil {
@@ -144,7 +147,7 @@ func TestEditOrder(t *testing.T) {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
 	defer repo.ClearOrders()
-	no := newTestOrder()
+	no := newTestOrder("art@vandelayindustries.com")
 	// add new test order
 	m, err := repo.AddOrder(no)
 	if err != nil {
@@ -158,7 +161,7 @@ func TestEditOrder(t *testing.T) {
 			Attributes: &order.OrderUpdateAttributes{
 				Courier:  "UPS",
 				Comments: "This is an updated test comment",
-				Status:   1, // "Growing"
+				Status:   order.OrderStatus_Growing,
 			},
 		},
 	}
@@ -182,6 +185,7 @@ func TestEditOrder(t *testing.T) {
 	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
 	assert.NotEqual(g.Courier, m.Courier, "should not match the already existing courier")
+	assert.NotEqual(g.Status, m.Status, "should not match the already existing status")
 
 	// set data with nonexistent ID
 	ed := &order.OrderUpdate{
@@ -207,9 +211,9 @@ func TestListOrders(t *testing.T) {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
 	defer repo.ClearOrders()
-	no := newTestOrder()
 	// add 15 new test orders
 	for i := 1; i <= 15; i++ {
+		no := newTestOrder(fmt.Sprintf("%s@kramericaindustries.com", RandString(10)))
 		_, err := repo.AddOrder(no)
 		if err != nil {
 			t.Fatalf("error in adding order %s", err)
@@ -225,48 +229,81 @@ func TestListOrders(t *testing.T) {
 
 	for _, order := range lo {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
-		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 	// compare timestamps for first two results
 	if lo[1].CreatedAt.UnixNano() > lo[0].CreatedAt.UnixNano() {
 		t.Fatalf("the created_at date of the second item should be older than the first item")
 	}
+	assert.NotEqual(lo[0].Consumer, lo[1].Consumer, "should have different consumers")
 	// convert fifth result to numeric timestamp in milliseconds
 	// so we can use this as cursor
 	ti := lo[4].CreatedAt.UnixNano() / 1000000
 
-	// get next five results (6-10)
+	// get next five results (5-9)
 	lo2, err := repo.ListOrders(ti, 4)
 	if err != nil {
-		t.Fatalf("error in getting orders 6-10 %s", err)
+		t.Fatalf("error in getting orders 5-9 %s", err)
 	}
 	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
 	for _, order := range lo2 {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
-		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 	// compare timestamps for first two results
 	if lo2[1].CreatedAt.UnixNano() > lo2[0].CreatedAt.UnixNano() {
 		t.Fatalf("the created_at date of the second item should be older than the first item")
 	}
+	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
 
-	// convert tenth result to numeric timestamp
+	// convert ninth result to numeric timestamp
 	ti2 := lo2[4].CreatedAt.UnixNano() / 1000000
-	// get last five results (11-15)
+	// get last five results (9-13)
 	lo3, err := repo.ListOrders(ti2, 4)
 	if err != nil {
-		t.Fatalf("error in getting last five orders %s", err)
+		t.Fatalf("error in getting orders 9-13 %s", err)
 	}
 	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
 	for _, order := range lo3 {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
-		assert.Equal(order.Consumer, "art@vandelayindustries.com", "should match the consumer email")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 	// compare timestamps for first two results
 	if lo3[1].CreatedAt.UnixNano() > lo3[0].CreatedAt.UnixNano() {
 		t.Fatalf("the created_at date of the second item should be older than the first item")
 	}
+
+	// convert 13th result to numeric timestamp
+	ti3 := lo3[4].CreatedAt.UnixNano() / 1000000
+	// get last results
+	lo4, err := repo.ListOrders(ti3, 4)
+	if err != nil {
+		t.Fatalf("error in getting orders 13-15 %s", err)
+	}
+	assert.Equal(len(lo4), 3, "should only bring last three results")
+	// compare timestamps for first two results
+	if lo4[1].CreatedAt.UnixNano() > lo4[0].CreatedAt.UnixNano() {
+		t.Fatalf("the created_at date of the second item should be older than the first item")
+	}
+}
+
+const (
+	charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+)
+
+var seedRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+func stringWithCharset(length int, charset string) string {
+	var b []byte
+	for i := 0; i < length; i++ {
+		b = append(
+			b,
+			charset[seedRand.Intn(len(charset))],
+		)
+	}
+	return string(b)
+}
+
+func RandString(length int) string {
+	return stringWithCharset(length, charSet)
 }
