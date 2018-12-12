@@ -36,7 +36,7 @@ func newTestOrder() *order.NewOrder {
 				Comments:         "This is a test comment",
 				Payment:          "Credit card",
 				PurchaseOrderNum: "38975932199",
-				Status:           0, // "In_preparation"
+				Status:           order.OrderStatus_In_preparation,
 				Consumer:         "art@vandelayindustries.com",
 				Payer:            "dr.van.nostrand@gmail.com",
 				Purchaser:        "dr.van.nostrand@gmail.com",
