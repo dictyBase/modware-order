@@ -227,13 +227,15 @@ func TestListOrders(t *testing.T) {
 	assert := assert.New(t)
 	assert.Equal(len(lo), 5, "should match the provided limit number + 1")
 
-	for _, order := range lo {
+	for i, order := range lo {
+		// compare timestamps of all results in range
+		if i > 0 {
+			if lo[i].CreatedAt.UnixNano() > lo[i-1].CreatedAt.UnixNano() {
+				t.Fatalf("the next created_at date should be older than the previous")
+			}
+		}
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
-	}
-	// compare timestamps for first two results
-	if lo[1].CreatedAt.UnixNano() > lo[0].CreatedAt.UnixNano() {
-		t.Fatalf("the created_at date of the second item should be older than the first item")
 	}
 	assert.NotEqual(lo[0].Consumer, lo[1].Consumer, "should have different consumers")
 	// convert fifth result to numeric timestamp in milliseconds
@@ -246,13 +248,14 @@ func TestListOrders(t *testing.T) {
 		t.Fatalf("error in getting orders 5-9 %s", err)
 	}
 	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
-	for _, order := range lo2 {
-		assert.Equal(order.Courier, "FedEx", "should match the courier")
-		assert.NotEmpty(order.Key, "should not have empty key/id")
-	}
-	// compare timestamps for first two results
-	if lo2[1].CreatedAt.UnixNano() > lo2[0].CreatedAt.UnixNano() {
-		t.Fatalf("the created_at date of the second item should be older than the first item")
+	assert.Equal(lo2[0], lo[4], "last item from first five results and first item from next five results should be the same")
+	for i := range lo2 {
+		// compare timestamps of all results in range
+		if i > 0 {
+			if lo2[i].CreatedAt.UnixNano() > lo2[i-1].CreatedAt.UnixNano() {
+				t.Fatalf("the next created_at date should be older than the previous")
+			}
+		}
 	}
 	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
 
@@ -264,13 +267,14 @@ func TestListOrders(t *testing.T) {
 		t.Fatalf("error in getting orders 9-13 %s", err)
 	}
 	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
-	for _, order := range lo3 {
-		assert.Equal(order.Courier, "FedEx", "should match the courier")
-		assert.NotEmpty(order.Key, "should not have empty key/id")
-	}
-	// compare timestamps for first two results
-	if lo3[1].CreatedAt.UnixNano() > lo3[0].CreatedAt.UnixNano() {
-		t.Fatalf("the created_at date of the second item should be older than the first item")
+	assert.Equal(lo3[0].Consumer, lo2[4].Consumer, "last item from previous five results and first item from next five results should be the same")
+	for i := range lo3 {
+		// compare timestamps of all results in range
+		if i > 0 {
+			if lo3[i].CreatedAt.UnixNano() > lo3[i-1].CreatedAt.UnixNano() {
+				t.Fatalf("the next created_at date should be older than the previous")
+			}
+		}
 	}
 
 	// convert 13th result to numeric timestamp
@@ -281,9 +285,14 @@ func TestListOrders(t *testing.T) {
 		t.Fatalf("error in getting orders 13-15 %s", err)
 	}
 	assert.Equal(len(lo4), 3, "should only bring last three results")
-	// compare timestamps for first two results
-	if lo4[1].CreatedAt.UnixNano() > lo4[0].CreatedAt.UnixNano() {
-		t.Fatalf("the created_at date of the second item should be older than the first item")
+	assert.Equal(lo3[4].Consumer, lo4[0].Consumer, "last item from previous five results and first item from next three results should be the same")
+	for i := range lo4 {
+		// compare timestamps of all results in range
+		if i > 0 {
+			if lo4[i].CreatedAt.UnixNano() > lo4[i-1].CreatedAt.UnixNano() {
+				t.Fatalf("the next created_at date should be older than the previous")
+			}
+		}
 	}
 }
 
