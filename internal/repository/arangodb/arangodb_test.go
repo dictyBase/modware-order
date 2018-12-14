@@ -12,6 +12,7 @@ import (
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/arangomanager/testarango"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
+	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,6 +28,10 @@ func getConnectParams() *manager.ConnectParams {
 		Port:     gta.Port,
 		Istls:    false,
 	}
+}
+
+func toTimestamp(t time.Time) int64 {
+	return t.UnixNano() / 1000000
 }
 
 func newTestOrder(consumer string) *order.NewOrder {
@@ -227,20 +232,14 @@ func TestListOrders(t *testing.T) {
 	assert := assert.New(t)
 	assert.Equal(len(lo), 5, "should match the provided limit number + 1")
 
-	for i, order := range lo {
-		// compare timestamps of all results in range
-		if i > 0 {
-			if lo[i].CreatedAt.UnixNano() > lo[i-1].CreatedAt.UnixNano() {
-				t.Fatalf("the next created_at date should be older than the previous")
-			}
-		}
+	for _, order := range lo {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 	assert.NotEqual(lo[0].Consumer, lo[1].Consumer, "should have different consumers")
 	// convert fifth result to numeric timestamp in milliseconds
 	// so we can use this as cursor
-	ti := lo[4].CreatedAt.UnixNano() / 1000000
+	ti := toTimestamp(lo[4].CreatedAt)
 
 	// get next five results (5-9)
 	lo2, err := repo.ListOrders(ti, 4)
@@ -249,18 +248,10 @@ func TestListOrders(t *testing.T) {
 	}
 	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
 	assert.Equal(lo2[0], lo[4], "last item from first five results and first item from next five results should be the same")
-	for i := range lo2 {
-		// compare timestamps of all results in range
-		if i > 0 {
-			if lo2[i].CreatedAt.UnixNano() > lo2[i-1].CreatedAt.UnixNano() {
-				t.Fatalf("the next created_at date should be older than the previous")
-			}
-		}
-	}
 	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
 
 	// convert ninth result to numeric timestamp
-	ti2 := lo2[4].CreatedAt.UnixNano() / 1000000
+	ti2 := toTimestamp(lo2[4].CreatedAt)
 	// get last five results (9-13)
 	lo3, err := repo.ListOrders(ti2, 4)
 	if err != nil {
@@ -268,17 +259,9 @@ func TestListOrders(t *testing.T) {
 	}
 	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
 	assert.Equal(lo3[0].Consumer, lo2[4].Consumer, "last item from previous five results and first item from next five results should be the same")
-	for i := range lo3 {
-		// compare timestamps of all results in range
-		if i > 0 {
-			if lo3[i].CreatedAt.UnixNano() > lo3[i-1].CreatedAt.UnixNano() {
-				t.Fatalf("the next created_at date should be older than the previous")
-			}
-		}
-	}
 
 	// convert 13th result to numeric timestamp
-	ti3 := lo3[4].CreatedAt.UnixNano() / 1000000
+	ti3 := toTimestamp(lo3[4].CreatedAt)
 	// get last results
 	lo4, err := repo.ListOrders(ti3, 4)
 	if err != nil {
@@ -286,13 +269,26 @@ func TestListOrders(t *testing.T) {
 	}
 	assert.Equal(len(lo4), 3, "should only bring last three results")
 	assert.Equal(lo3[4].Consumer, lo4[0].Consumer, "last item from previous five results and first item from next three results should be the same")
-	for i := range lo4 {
-		// compare timestamps of all results in range
-		if i > 0 {
-			if lo4[i].CreatedAt.UnixNano() > lo4[i-1].CreatedAt.UnixNano() {
-				t.Fatalf("the next created_at date should be older than the previous")
-			}
-		}
+	testModelListSort(lo, t)
+	testModelListSort(lo2, t)
+	testModelListSort(lo3, t)
+	testModelListSort(lo4, t)
+}
+
+func testModelListSort(m []*model.OrderDoc, t *testing.T) {
+	it, err := NewPairWiseIterator(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert := assert.New(t)
+	for it.NextPair() {
+		cm, nm := it.Pair()
+		assert.Truef(
+			nm.CreatedAt.Before(cm.CreatedAt),
+			"date %s should be before %s",
+			nm.CreatedAt.String(),
+			cm.CreatedAt.String(),
+		)
 	}
 }
 
