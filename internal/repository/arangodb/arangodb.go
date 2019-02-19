@@ -116,20 +116,46 @@ func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, e
 }
 
 // ListOrders provides a list of all orders
-func (ar *arangorepository) ListOrders(cursor int64, limit int64) ([]*model.OrderDoc, error) {
+func (ar *arangorepository) ListOrders(p *order.ListParameters) ([]*model.OrderDoc, error) {
 	var om []*model.OrderDoc
 	var stmt string
-	bindVars := map[string]interface{}{
-		"@stock_order_collection": ar.sorder.Name(),
-		"limit":                   limit + 1,
-	}
-	if cursor == 0 { // no cursor so return first set of result
-		stmt = orderList
+	c := p.Cursor
+	l := p.Limit
+	f := p.Filter
+	if len(f) > 0 {
+		if c == 0 { // no cursor so return first set of result
+			stmt = fmt.Sprintf(
+				orderListWithFilter,
+				ar.sorder.Name(),
+				f,
+				l+1,
+			)
+		} else { // else include both filter and cursor
+			stmt = fmt.Sprintf(
+				orderListFilterWithCursor,
+				ar.sorder.Name(),
+				c,
+				f,
+				l+1,
+			)
+		}
 	} else {
-		bindVars["next_cursor"] = cursor
-		stmt = orderListWithCursor
+		if c == 0 {
+			stmt = fmt.Sprintf(
+				orderList,
+				ar.sorder.Name(),
+				l+1,
+			)
+		} else {
+			stmt = fmt.Sprintf(
+				orderListWithCursor,
+				ar.sorder.Name(),
+				c,
+				l+1,
+			)
+		}
 	}
-	rs, err := ar.database.SearchRows(stmt, bindVars)
+	rs, err := ar.database.Search(stmt)
 	if err != nil {
 		return om, err
 	}
