@@ -10,6 +10,7 @@ import (
 
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
+	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/arangomanager/testarango"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/model"
@@ -164,9 +165,13 @@ func TestEditOrder(t *testing.T) {
 			Type: "order",
 			Id:   m.Key,
 			Attributes: &order.OrderUpdateAttributes{
-				Courier:  "UPS",
-				Comments: "This is an updated test comment",
-				Status:   order.OrderStatus_Growing,
+				Courier:          "UPS",
+				CourierAccount:   "99999999",
+				Comments:         "This is an updated test comment",
+				Payment:          "Check",
+				PurchaseOrderNum: "33333333",
+				Items:            []string{"xyz", "abc"},
+				Status:           order.OrderStatus_Growing,
 			},
 		},
 	}
@@ -178,7 +183,11 @@ func TestEditOrder(t *testing.T) {
 	assert := assert.New(t)
 	// tests to make sure updated data matches passed in data
 	assert.Equal(e.Courier, testData.Data.Attributes.Courier, "should match the new courier")
+	assert.Equal(e.CourierAccount, testData.Data.Attributes.CourierAccount, "should match the new courier account")
 	assert.Equal(e.Comments, testData.Data.Attributes.Comments, "should match the new comments")
+	assert.Equal(e.Payment, testData.Data.Attributes.Payment, "should match the new payment")
+	assert.Equal(e.PurchaseOrderNum, testData.Data.Attributes.PurchaseOrderNum, "should match the new purchase order number")
+	assert.ElementsMatch(e.Items, testData.Data.Attributes.Items, "should match the new items")
 	assert.Equal(e.Status, testData.Data.Attributes.Status.String(), "should match the new status")
 
 	// get the recently modified order so we can compare
@@ -187,10 +196,8 @@ func TestEditOrder(t *testing.T) {
 		t.Fatalf("error in getting order %s with ID %s", m.Key, err)
 	}
 	// make sure existing data wasn't overwritten by update
-	assert.Equal(g.CourierAccount, m.CourierAccount, "should match the already existing courier account")
+	assert.Equal(g.Payer, m.Payer, "should match the already existing payer")
 	assert.Equal(e.Courier, g.Courier, "should match the new courier")
-	assert.NotEqual(g.Courier, m.Courier, "should not match the already existing courier")
-	assert.NotEqual(g.Status, m.Status, "should not match the already existing status")
 
 	// set data with nonexistent ID
 	ed := &order.OrderUpdate{
@@ -239,7 +246,7 @@ func TestListOrders(t *testing.T) {
 	assert.NotEqual(lo[0].Consumer, lo[1].Consumer, "should have different consumers")
 	// convert fifth result to numeric timestamp in milliseconds
 	// so we can use this as cursor
-	ti := toTimestamp(lo[4].CreatedAt)
+	ti := toTimestamp(lo[len(lo)-1].CreatedAt)
 
 	// get next five results (5-9)
 	lo2, err := repo.ListOrders(&order.ListParameters{Cursor: ti, Limit: 4})
@@ -247,32 +254,50 @@ func TestListOrders(t *testing.T) {
 		t.Fatalf("error in getting orders 5-9 %s", err)
 	}
 	assert.Len(lo2, 5, "should match the provided limit number + 1")
-	assert.Equal(lo2[0], lo[4], "last item from first five results and first item from next five results should be the same")
+	assert.Exactly(lo2[0], lo[len(lo)-1], "last item from first five results and first item from next five results should be the same")
 	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
 
 	// convert ninth result to numeric timestamp
-	ti2 := toTimestamp(lo2[4].CreatedAt)
+	ti2 := toTimestamp(lo2[len(lo2)-1].CreatedAt)
 	// get last five results (9-13)
 	lo3, err := repo.ListOrders(&order.ListParameters{Cursor: ti2, Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting orders 9-13 %s", err)
 	}
 	assert.Len(lo3, 5, "should match the provided limit number + 1")
-	assert.Equal(lo3[0].Consumer, lo2[4].Consumer, "last item from previous five results and first item from next five results should be the same")
+	assert.Exactly(lo3[0], lo2[len(lo2)-1], "last item from previous five results and first item from next five results should be the same")
 
 	// convert 13th result to numeric timestamp
-	ti3 := toTimestamp(lo3[4].CreatedAt)
+	ti3 := toTimestamp(lo3[len(lo3)-1].CreatedAt)
 	// get last results
 	lo4, err := repo.ListOrders(&order.ListParameters{Cursor: ti3, Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting orders 13-15 %s", err)
 	}
 	assert.Len(lo4, 3, "should only bring last three results")
-	assert.Equal(lo3[4].Consumer, lo4[0].Consumer, "last item from previous five results and first item from next three results should be the same")
+	assert.Exactly(lo3[4], lo4[0], "last item from previous five results and first item from next three results should be the same")
 	testModelListSort(lo, t)
 	testModelListSort(lo2, t)
 	testModelListSort(lo3, t)
 	testModelListSort(lo4, t)
+
+	sf, err := repo.ListOrders(&order.ListParameters{Limit: 100, Filter: convertFilterToQuery("courier===FedEx")})
+	if err != nil {
+		t.Fatalf("error in getting orders with courier filter %s", err)
+	}
+	assert.Len(sf, 15, "should list all 15 orders")
+
+	sc, err := repo.ListOrders(&order.ListParameters{Cursor: toTimestamp(sf[5].CreatedAt), Limit: 100, Filter: convertFilterToQuery("courier===FedEx")})
+	if err != nil {
+		t.Fatalf("error in getting orders with cursor and courier filter %s", err)
+	}
+	assert.Len(sc, 10, "should list last 10 orders")
+
+	sn, err := repo.ListOrders(&order.ListParameters{Cursor: toTimestamp(sf[5].CreatedAt), Limit: 100, Filter: convertFilterToQuery("courier===UPS")})
+	if err != nil {
+		t.Fatalf("error in getting orders with cursor and courier filter %s", err)
+	}
+	assert.Len(sn, 0, "should list last no UPS orders")
 }
 
 func testModelListSort(m []*model.OrderDoc, t *testing.T) {
@@ -311,4 +336,20 @@ func stringWithCharset(length int, charset string) string {
 
 func RandString(length int) string {
 	return stringWithCharset(length, charSet)
+}
+
+func convertFilterToQuery(s string) string {
+	// parse filter logic
+	// this needs to be done here since it is implemented in the service, not repository
+	p, err := query.ParseFilterString(s)
+	if err != nil {
+		log.Printf("error parsing filter string %s", err)
+		return s
+	}
+	str, err := query.GenAQLFilterStatement(&query.StatementParameters{Fmap: FMap, Filters: p, Doc: "s"})
+	if err != nil {
+		log.Printf("error generating AQL filter statement %s", err)
+		return s
+	}
+	return str
 }
