@@ -129,7 +129,7 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
 	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
-	assert.Equal(len(g.Items), 2, "should match length of two items")
+	assert.Len(g.Items, 2, "should match length of two items")
 	assert.NotEmpty(g.Key, "should not have empty key/id")
 	assert.True(m.CreatedAt.Equal(g.CreatedAt), "should match created time of order")
 	assert.True(m.UpdatedAt.Equal(g.UpdatedAt), "should match updated time of order")
@@ -225,12 +225,12 @@ func TestListOrders(t *testing.T) {
 		}
 	}
 	// get first five results
-	lo, err := repo.ListOrders(0, 4)
+	lo, err := repo.ListOrders(&order.ListParameters{Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting first five orders %s", err)
 	}
 	assert := assert.New(t)
-	assert.Equal(len(lo), 5, "should match the provided limit number + 1")
+	assert.Len(lo, 5, "should match the provided limit number + 1")
 
 	for _, order := range lo {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
@@ -242,32 +242,32 @@ func TestListOrders(t *testing.T) {
 	ti := toTimestamp(lo[4].CreatedAt)
 
 	// get next five results (5-9)
-	lo2, err := repo.ListOrders(ti, 4)
+	lo2, err := repo.ListOrders(&order.ListParameters{Cursor: ti, Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting orders 5-9 %s", err)
 	}
-	assert.Equal(len(lo2), 5, "should match the provided limit number + 1")
+	assert.Len(lo2, 5, "should match the provided limit number + 1")
 	assert.Equal(lo2[0], lo[4], "last item from first five results and first item from next five results should be the same")
 	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
 
 	// convert ninth result to numeric timestamp
 	ti2 := toTimestamp(lo2[4].CreatedAt)
 	// get last five results (9-13)
-	lo3, err := repo.ListOrders(ti2, 4)
+	lo3, err := repo.ListOrders(&order.ListParameters{Cursor: ti2, Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting orders 9-13 %s", err)
 	}
-	assert.Equal(len(lo3), 5, "should match the provided limit number + 1")
+	assert.Len(lo3, 5, "should match the provided limit number + 1")
 	assert.Equal(lo3[0].Consumer, lo2[4].Consumer, "last item from previous five results and first item from next five results should be the same")
 
 	// convert 13th result to numeric timestamp
 	ti3 := toTimestamp(lo3[4].CreatedAt)
 	// get last results
-	lo4, err := repo.ListOrders(ti3, 4)
+	lo4, err := repo.ListOrders(&order.ListParameters{Cursor: ti3, Limit: 4})
 	if err != nil {
 		t.Fatalf("error in getting orders 13-15 %s", err)
 	}
-	assert.Equal(len(lo4), 3, "should only bring last three results")
+	assert.Len(lo4, 3, "should only bring last three results")
 	assert.Equal(lo3[4].Consumer, lo4[0].Consumer, "last item from previous five results and first item from next three results should be the same")
 	testModelListSort(lo, t)
 	testModelListSort(lo2, t)
