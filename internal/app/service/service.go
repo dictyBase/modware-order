@@ -6,9 +6,11 @@ import (
 	"strconv"
 
 	"github.com/dictyBase/apihelpers/aphgrpc"
+	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/message"
 	"github.com/dictyBase/modware-order/internal/repository"
+	"github.com/dictyBase/modware-order/internal/repository/arangodb"
 )
 
 // OrderService is the container for managing order service definition
@@ -144,8 +146,23 @@ func (s *OrderService) UpdateOrder(ctx context.Context, r *order.OrderUpdate) (*
 // ListOrders lists all existing orders
 func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) (*order.OrderCollection, error) {
 	oc := &order.OrderCollection{}
-	if len(r.Filter) == 0 { // no filter parameters
-		mc, err := s.repo.ListOrders(r.Cursor, r.Limit)
+	c := r.Cursor
+	l := r.Limit
+	f := r.Filter
+	if len(f) > 0 {
+		p, err := query.ParseFilterString(f)
+		if err != nil {
+			return oc, fmt.Errorf("error parsing filter string: %s", err)
+		}
+		str, err := query.GenAQLFilterStatement(&query.StatementParameters{Fmap: arangodb.FMap, Filters: p, Doc: "s"})
+		if err != nil {
+			return oc, fmt.Errorf("error generating AQL filter statement: %s", err)
+		}
+		// if the parsed statement is empty FILTER, just return empty string
+		if str == "FILTER " {
+			str = ""
+		}
+		mc, err := s.repo.ListOrders(&order.ListParameters{Cursor: c, Limit: l, Filter: str})
 		if err != nil {
 			return oc, aphgrpc.HandleGetError(ctx, err)
 		}
@@ -175,13 +192,54 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 		}
 		if len(ocdata) < int(r.Limit)-2 { // fewer results than limit
 			oc.Data = ocdata
-			oc.Meta = &order.Meta{Limit: r.Limit}
+			oc.Meta = &order.Meta{Limit: r.Limit, Total: int64(len(ocdata))}
 			return oc, nil
 		}
 		oc.Data = ocdata[:len(ocdata)-1]
 		oc.Meta = &order.Meta{
 			Limit:      r.Limit,
 			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
+			Total:      int64(len(ocdata)),
+		}
+	} else {
+		mc, err := s.repo.ListOrders(&order.ListParameters{Cursor: c, Limit: l})
+		if err != nil {
+			return oc, aphgrpc.HandleGetError(ctx, err)
+		}
+		if len(mc) == 0 {
+			return oc, aphgrpc.HandleNotFoundError(ctx, err)
+		}
+		var ocdata []*order.OrderCollection_Data
+		for _, m := range mc {
+			ocdata = append(ocdata, &order.OrderCollection_Data{
+				Type: s.GetResourceName(),
+				Id:   m.Key,
+				Attributes: &order.OrderAttributes{
+					CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
+					UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
+					Courier:          m.Courier,
+					CourierAccount:   m.CourierAccount,
+					Comments:         m.Comments,
+					Payment:          m.Payment,
+					PurchaseOrderNum: m.PurchaseOrderNum,
+					Status:           statusToEnum(m.Status),
+					Consumer:         m.Consumer,
+					Payer:            m.Payer,
+					Purchaser:        m.Purchaser,
+					Items:            m.Items,
+				},
+			})
+		}
+		if len(ocdata) < int(r.Limit)-2 { // fewer results than limit
+			oc.Data = ocdata
+			oc.Meta = &order.Meta{Limit: r.Limit, Total: int64(len(ocdata))}
+			return oc, nil
+		}
+		oc.Data = ocdata[:len(ocdata)-1]
+		oc.Meta = &order.Meta{
+			Limit:      r.Limit,
+			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
+			Total:      int64(len(ocdata)),
 		}
 	}
 	return oc, nil

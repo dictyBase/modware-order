@@ -4,19 +4,15 @@ require (
 	github.com/arangodb/go-driver v0.0.0-20181206080103-b1a864427d13
 	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
 	github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073
-	github.com/dictyBase/arangomanager v0.0.0-20181207213646-ee40af8355ea
+	github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68
 	github.com/dictyBase/go-genproto v0.0.0-20181203170714-0c5a42137f21
-	github.com/fatih/structs v1.1.0 // indirect
 	github.com/garyburd/redigo v1.6.0 // indirect
-	github.com/go-playground/locales v0.12.1 // indirect
-	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gogo/protobuf v1.1.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/grpc-gateway v1.6.2 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/leodido/go-urn v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
@@ -40,8 +36,6 @@ require (
 	google.golang.org/genproto v0.0.0-20181202183823-bd91e49a0898 // indirect
 	google.golang.org/grpc v1.17.0
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.24.0 // indirect
 	gopkg.in/mgutz/dat.v2 v2.0.0-20171004160617-d76e4f81c4ef // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0

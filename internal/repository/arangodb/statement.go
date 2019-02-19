@@ -28,16 +28,31 @@ const (
 			IN @@stock_order_collection RETURN NEW
 	`
 	orderList = `
-		FOR sorder IN @@stock_order_collection
-			SORT sorder.created_at DESC
-			LIMIT @limit
-			RETURN sorder
+		FOR s IN %s
+			SORT s.created_at DESC
+			LIMIT %d
+			RETURN s
 	`
+	orderListWithFilter = `
+		FOR s IN %s
+			SORT s.created_at DESC
+			%s
+			LIMIT %d
+			RETURN s
+`
 	orderListWithCursor = `
-		FOR sorder in @@stock_order_collection
-			FILTER sorder.created_at <= DATE_ISO8601(@next_cursor)
-			SORT sorder.created_at DESC
-			LIMIT @limit
-			RETURN sorder
+		FOR s in %s
+			FILTER s.created_at <= DATE_ISO8601(%d)
+			SORT s.created_at DESC
+			LIMIT %d
+			RETURN s
+	`
+	orderListFilterWithCursor = `
+		FOR s IN %s
+			FILTER s.created_at <= DATE_ISO8601(%d)
+			SORT s.created_at DESC
+			%s
+			LIMIT %d
+			RETURN s
 	`
 )
