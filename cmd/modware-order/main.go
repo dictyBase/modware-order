@@ -83,6 +83,10 @@ func main() {
 					Usage: "arangodb collection for storing stock orders",
 					Value: "stock_order",
 				},
+				cli.BoolTFlag{
+					Name:  "reflection, ref",
+					Usage: "flag for enabling server reflection",
+				},
 			},
 		},
 	}
