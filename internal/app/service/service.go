@@ -245,6 +245,41 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 	return oc, nil
 }
 
+// LoadOrder handles the loading of an existing order
+func (s *OrderService) LoadOrder(ctx context.Context, r *order.ExistingOrder) (*order.Order, error) {
+	o := &order.Order{}
+	if err := r.Validate(); err != nil {
+		return o, aphgrpc.HandleInvalidParamError(ctx, err)
+	}
+	m, err := s.repo.LoadOrder(r)
+	if err != nil {
+		return o, aphgrpc.HandleInsertError(ctx, err)
+	}
+	if m.NotFound {
+		return o, aphgrpc.HandleNotFoundError(ctx, err)
+	}
+	o.Data = &order.Order_Data{
+		Type: s.GetResourceName(),
+		Id:   m.Key,
+		Attributes: &order.OrderAttributes{
+			CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
+			Courier:          m.Courier,
+			CourierAccount:   m.CourierAccount,
+			Comments:         m.Comments,
+			Payment:          m.Payment,
+			PurchaseOrderNum: m.PurchaseOrderNum,
+			Status:           statusToEnum(m.Status),
+			Consumer:         m.Consumer,
+			Payer:            m.Payer,
+			Purchaser:        m.Purchaser,
+			Items:            m.Items,
+		},
+	}
+	s.publisher.Publish(s.Topics["orderCreate"], o)
+	return o, nil
+}
+
 func genNextCursorVal(ocd *order.OrderCollection_Data) int64 {
 	tint, _ := strconv.ParseInt(
 		fmt.Sprintf("%d%d", ocd.Attributes.CreatedAt.GetSeconds(), ocd.Attributes.CreatedAt.GetNanos()),

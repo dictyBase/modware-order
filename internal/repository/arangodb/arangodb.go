@@ -59,20 +59,10 @@ func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
 // AddOrder creates a new stock order
 func (ar *arangorepository) AddOrder(no *order.NewOrder) (*model.OrderDoc, error) {
 	m := &model.OrderDoc{}
+	var bindVars map[string]interface{}
 	attr := no.Data.Attributes
-	bindVars := map[string]interface{}{
-		"@stock_order_collection": ar.sorder.Name(),
-		"courier":                 attr.Courier,
-		"courier_account":         attr.CourierAccount,
-		"comments":                attr.Comments,
-		"payment":                 attr.Payment,
-		"purchase_order_num":      attr.PurchaseOrderNum,
-		"status":                  attr.Status.String(),
-		"consumer":                attr.Consumer,
-		"payer":                   attr.Payer,
-		"purchaser":               attr.Purchaser,
-		"items":                   attr.Items,
-	}
+	bindVars = addableOrderBindParams(attr)
+	bindVars["@stock_order_collection"] = ar.sorder.Name()
 	r, err := ar.database.DoRun(orderIns, bindVars)
 	if err != nil {
 		return m, err
@@ -172,6 +162,21 @@ func (ar *arangorepository) ListOrders(p *order.ListParameters) ([]*model.OrderD
 	return om, nil
 }
 
+func (ar *arangorepository) LoadOrder(eo *order.ExistingOrder) (*model.OrderDoc, error) {
+	m := &model.OrderDoc{}
+	var bindVars map[string]interface{}
+	bindVars = existingOrderBindParams(eo.Data.Attributes)
+	bindVars["@stock_order_collection"] = ar.sorder.Name()
+	r, err := ar.database.DoRun(orderLoad, bindVars)
+	if err != nil {
+		return m, err
+	}
+	if err := r.Read(m); err != nil {
+		return m, err
+	}
+	return m, nil
+}
+
 func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
 	bindVars := make(map[string]interface{})
 	if len(attr.Courier) > 0 {
@@ -202,4 +207,42 @@ func (ar *arangorepository) ClearOrders() error {
 		return err
 	}
 	return nil
+}
+
+func addableOrderBindParams(attr *order.NewOrderAttributes) map[string]interface{} {
+	return map[string]interface{}{
+		"courier":            attr.Courier,
+		"courier_account":    attr.CourierAccount,
+		"comments":           normalizeStrBindParam(attr.Comments),
+		"payment":            attr.Payment,
+		"purchase_order_num": attr.PurchaseOrderNum,
+		"status":             attr.Status.String(),
+		"consumer":           attr.Consumer,
+		"payer":              attr.Payer,
+		"purchaser":          attr.Purchaser,
+		"items":              attr.Items,
+	}
+}
+
+func existingOrderBindParams(attr *order.ExistingOrderAttributes) map[string]interface{} {
+	return map[string]interface{}{
+		"created_at":         attr.CreatedAt,
+		"courier":            attr.Courier,
+		"courier_account":    attr.CourierAccount,
+		"comments":           normalizeStrBindParam(attr.Comments),
+		"payment":            attr.Payment,
+		"purchase_order_num": attr.PurchaseOrderNum,
+		"status":             attr.Status.String(),
+		"consumer":           attr.Consumer,
+		"payer":              attr.Payer,
+		"purchaser":          attr.Purchaser,
+		"items":              attr.Items,
+	}
+}
+
+func normalizeStrBindParam(str string) string {
+	if len(str) > 0 {
+		return str
+	}
+	return ""
 }
