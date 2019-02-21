@@ -48,6 +48,7 @@ OPTIONS:
    --nats-port value                      nats messaging server port [$NATS_SERVICE_PORT]
    --port value                           tcp port at which the server will be available (default: "9560")
    --order-collection value               arangodb collection for storing stock orders (default: "stock_order")
+   --reflection, --ref                    flag for enabling server reflection
 ```
 
 # API
