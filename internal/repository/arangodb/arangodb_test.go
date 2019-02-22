@@ -9,6 +9,7 @@ import (
 	"time"
 
 	driver "github.com/arangodb/go-driver"
+	"github.com/dictyBase/apihelpers/aphgrpc"
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/arangomanager/testarango"
@@ -299,43 +300,43 @@ func TestListOrders(t *testing.T) {
 	assert.Len(sn, 0, "should list last no UPS orders")
 }
 
-// func TestLoadOrder(t *testing.T) {
-// 	connP := getConnectParams()
-// 	repo, err := NewOrderRepo(connP, collection)
-// 	if err != nil {
-// 		t.Fatalf("error in connecting to order repository %s", err)
-// 	}
-// 	defer repo.ClearOrders()
-// 	tm, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
-// 	eo := &order.ExistingOrder{
-// 		Data: &order.ExistingOrder_Data{
-// 			Type: "order",
-// 			Attributes: &order.ExistingOrderAttributes{
-// 				CreatedAt: aphgrpc.TimestampProto(tm),
-// 				Consumer:  "super@c.org",
-// 				Payer:     "super@c.org",
-// 				Purchaser: "super@c.org",
-// 				Items:     []string{"DBS2109858", "DBP8349822"},
-// 			},
-// 		},
-// 	}
-// 	m, err := repo.LoadOrder(eo)
-// 	if err != nil {
-// 		t.Fatalf("error in adding order %s", err)
-// 	}
-// 	assert := assert.New(t)
-// 	assert.Equal(m.CreatedAt, eo.Data.Attributes.CreatedAt, "should match created_at")
-// 	assert.Empty(m.Courier, eo.Data.Attributes.Courier, "should not have courier")
-// 	assert.Empty(m.CourierAccount, "should not have courier account")
-// 	assert.Empty(m.Comments, "should not have comments")
-// 	assert.Empty(m.Payment, "should not have payment")
-// 	assert.Empty(m.PurchaseOrderNum, "should not have purchase order number")
-// 	assert.Equal(m.Consumer, eo.Data.Attributes.Consumer, "should match the consumer")
-// 	assert.Equal(m.Payer, eo.Data.Attributes.Payer, "should match the payer")
-// 	assert.Equal(m.Purchaser, eo.Data.Attributes.Purchaser, "should match the purchaser")
-// 	assert.ElementsMatch(m.Items, eo.Data.Attributes.Items, "should match the items")
-// 	assert.NotEmpty(m.Key, "should not have empty key/id")
-// }
+func TestLoadOrder(t *testing.T) {
+	connP := getConnectParams()
+	repo, err := NewOrderRepo(connP, collection)
+	if err != nil {
+		t.Fatalf("error in connecting to order repository %s", err)
+	}
+	defer repo.ClearOrders()
+	tm, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
+	eo := &order.ExistingOrder{
+		Data: &order.ExistingOrder_Data{
+			Type: "order",
+			Attributes: &order.ExistingOrderAttributes{
+				CreatedAt: aphgrpc.TimestampProto(tm),
+				Consumer:  "super@c.org",
+				Payer:     "super@c.org",
+				Purchaser: "super@c.org",
+				Items:     []string{"DBS2109858", "DBP8349822"},
+			},
+		},
+	}
+	m, err := repo.LoadOrder(eo)
+	if err != nil {
+		t.Fatalf("error in loading order %s", err)
+	}
+	assert := assert.New(t)
+	assert.True(m.CreatedAt.Equal(tm), "should match created_at")
+	assert.Empty(m.Courier, eo.Data.Attributes.Courier, "should not have courier")
+	assert.Empty(m.CourierAccount, "should not have courier account")
+	assert.Empty(m.Comments, "should not have comments")
+	assert.Empty(m.Payment, "should not have payment")
+	assert.Empty(m.PurchaseOrderNum, "should not have purchase order number")
+	assert.Equal(m.Consumer, eo.Data.Attributes.Consumer, "should match the consumer")
+	assert.Equal(m.Payer, eo.Data.Attributes.Payer, "should match the payer")
+	assert.Equal(m.Purchaser, eo.Data.Attributes.Purchaser, "should match the purchaser")
+	assert.ElementsMatch(m.Items, eo.Data.Attributes.Items, "should match the items")
+	assert.NotEmpty(m.Key, "should not have empty key/id")
+}
 
 func testModelListSort(m []*model.OrderDoc, t *testing.T) {
 	it, err := NewPairWiseIterator(m)

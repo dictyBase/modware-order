@@ -10,6 +10,7 @@ import (
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/dictyBase/modware-order/internal/repository"
+	"github.com/golang/protobuf/ptypes"
 )
 
 type arangorepository struct {
@@ -226,7 +227,8 @@ func addableOrderBindParams(attr *order.NewOrderAttributes) map[string]interface
 
 func existingOrderBindParams(attr *order.ExistingOrderAttributes) map[string]interface{} {
 	return map[string]interface{}{
-		"created_at":         attr.CreatedAt,
+		"created_at":         ptypes.TimestampString(attr.CreatedAt),
+		"updated_at":         ptypes.TimestampString(attr.CreatedAt),
 		"courier":            attr.Courier,
 		"courier_account":    attr.CourierAccount,
 		"comments":           normalizeStrBindParam(attr.Comments),

@@ -12,12 +12,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073 h1:/4yHFOkL4N5mJpjCu0BPI5VjOyD8dmDkSq7BAgGMlEM=
 github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073/go.mod h1:WMCcrIvQoc3UBfA643QFDQufK2a+7mYGgkGxVFWfJus=
-github.com/dictyBase/arangomanager v0.0.0-20181207213646-ee40af8355ea h1:h+TFLTSQzmil753Q2PDeR6TUQGXlZg12pN/NSU037AI=
-github.com/dictyBase/arangomanager v0.0.0-20181207213646-ee40af8355ea/go.mod h1:0H8JGH8tnla3cagGMgyAc2+KuseooHKsv4Byx3jeKO4=
 github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68 h1:9tMcTXGxsT+I7G4aCQPXzyU0GNYbXt+En3JtoHxgzfc=
 github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68/go.mod h1:ZKfo7JHpT9KfmJEJwZLhwoyCRBxIPW+IeX+13eUEIlg=
-github.com/dictyBase/go-genproto v0.0.0-20181203170714-0c5a42137f21 h1:0/FBz5pDIax33VWWgsUkhkVuYLmC1JV+eMZxwuToA3k=
-github.com/dictyBase/go-genproto v0.0.0-20181203170714-0c5a42137f21/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
 github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5 h1:maFOX6k2cUE58L9Bj3NNq0M90YIqYWZ5Bq5qnQdVllo=
 github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
@@ -72,10 +68,14 @@ github.com/mattn/go-sqlite3 v1.10.0 h1:jbhqpg7tQe4SupckyijYiy0mJJ/pRyHvXf7JdWK86
 github.com/mattn/go-sqlite3 v1.10.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b h1:j7+1HpAFS1zy5+Q4qx1fWh90gTKwiN4QCGoY9TWyyO4=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
+github.com/mgutz/jo v1.1.0 h1:9yFNCm/7xX1az2sLjEzsPxIqMmtzeIKyMOCU9iAg3Zk=
+github.com/mgutz/jo v1.1.0/go.mod h1:N638tkDlOBlY8fcrY6JMX/homNKJqXr+nG3MVTYWffk=
 github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab h1:n8cgpHzJ5+EDyDri2s/GC7a9+qK3/YEGnBsd0uS/8PY=
 github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab/go.mod h1:y1pL58r5z2VvAjeG1VLGc8zOQgSOzbKN7kMHPvFXJ+8=
 github.com/mgutz/str v1.2.0 h1:4IzWSdIz9qPQWLfKZ0rJcV0jcUDpxvP4JVZ4GXQyvSw=
 github.com/mgutz/str v1.2.0/go.mod h1:w1v0ofgLaJdoD0HpQ3fycxKD1WtxpjSo151pK/31q6w=
+github.com/mgutz/to v1.0.0 h1:rMavw/T9DWwmjl7Vi/xrPjFu+yoN555DVDqJbjGmwDQ=
+github.com/mgutz/to v1.0.0/go.mod h1:frEfNDHS+97/hJI/aqaT4Rm+utwYs1T7NLNUjxLk+N8=
 github.com/mwitkow/go-proto-validators v0.0.0-20180403085117-0950a7990007 h1:28i1IjGcx8AofiB4N3q5Yls55VEaitzuEPkFJEVgGkA=
 github.com/mwitkow/go-proto-validators v0.0.0-20180403085117-0950a7990007/go.mod h1:m2XC9Qq0AlmmVksL6FktJCdTYyLk7V3fKyp0sl1yWQo=
 github.com/nats-io/gnatsd v1.3.0 h1:+5d80klu3QaJgNbdavVBjWJP7cHd11U2CLnRTFM9ICI=

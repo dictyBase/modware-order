@@ -20,6 +20,7 @@ const (
 	orderLoad = `
 		INSERT {
 			created_at: DATE_ISO8601(@created_at),
+			updated_at: DATE_ISO8601(@updated_at),
 			courier: @courier,
 			courier_account: @courier_account,
 			comments: @comments,
