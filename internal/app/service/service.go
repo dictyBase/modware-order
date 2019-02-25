@@ -280,6 +280,15 @@ func (s *OrderService) LoadOrder(ctx context.Context, r *order.ExistingOrder) (*
 	return o, nil
 }
 
+// PrepareForOrder clears the database to prepare for loading data
+func (s *OrderService) PrepareForOrder(ctx context.Context, e *empty.Empty) (*empty.Empty, error) {
+	e := &empty.Empty{}
+	if err := s.repo.ClearOrders(); err != nil {
+		return e, aphgrpc.HandleGenericError(ctx, err)
+	}
+	return e, nil
+}
+
 func genNextCursorVal(ocd *order.OrderCollection_Data) int64 {
 	tint, _ := strconv.ParseInt(
 		fmt.Sprintf("%d%d", ocd.Attributes.CreatedAt.GetSeconds(), ocd.Attributes.CreatedAt.GetNanos()),

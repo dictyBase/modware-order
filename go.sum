@@ -16,6 +16,8 @@ github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68 h1:9tMcTXG
 github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68/go.mod h1:ZKfo7JHpT9KfmJEJwZLhwoyCRBxIPW+IeX+13eUEIlg=
 github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5 h1:maFOX6k2cUE58L9Bj3NNq0M90YIqYWZ5Bq5qnQdVllo=
 github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
+github.com/dictyBase/go-genproto v0.0.0-20190225231732-662920fc4435 h1:YQqLUFXJVTfZxrHuyhW/B1imp+Kq+hKHUW8Rdd5ec4Y=
+github.com/dictyBase/go-genproto v0.0.0-20190225231732-662920fc4435/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=
