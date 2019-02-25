@@ -313,8 +313,7 @@ func TestLoadOrder(t *testing.T) {
 			Type: "order",
 			Attributes: &order.ExistingOrderAttributes{
 				CreatedAt: aphgrpc.TimestampProto(tm),
-				Consumer:  "super@c.org",
-				Payer:     "super@c.org",
+				UpdatedAt: aphgrpc.TimestampProto(tm),
 				Purchaser: "super@c.org",
 				Items:     []string{"DBS2109858", "DBP8349822"},
 			},
@@ -326,13 +325,7 @@ func TestLoadOrder(t *testing.T) {
 	}
 	assert := assert.New(t)
 	assert.True(m.CreatedAt.Equal(tm), "should match created_at")
-	assert.Empty(m.Courier, eo.Data.Attributes.Courier, "should not have courier")
-	assert.Empty(m.CourierAccount, "should not have courier account")
-	assert.Empty(m.Comments, "should not have comments")
-	assert.Empty(m.Payment, "should not have payment")
-	assert.Empty(m.PurchaseOrderNum, "should not have purchase order number")
-	assert.Equal(m.Consumer, eo.Data.Attributes.Consumer, "should match the consumer")
-	assert.Equal(m.Payer, eo.Data.Attributes.Payer, "should match the payer")
+	assert.True(m.UpdatedAt.Equal(tm), "should match updated_at")
 	assert.Equal(m.Purchaser, eo.Data.Attributes.Purchaser, "should match the purchaser")
 	assert.ElementsMatch(m.Items, eo.Data.Attributes.Items, "should match the items")
 	assert.NotEmpty(m.Key, "should not have empty key/id")

@@ -11,6 +11,7 @@ import (
 	"github.com/dictyBase/modware-order/internal/message"
 	"github.com/dictyBase/modware-order/internal/repository"
 	"github.com/dictyBase/modware-order/internal/repository/arangodb"
+	"github.com/golang/protobuf/ptypes/empty"
 )
 
 // OrderService is the container for managing order service definition
@@ -281,7 +282,7 @@ func (s *OrderService) LoadOrder(ctx context.Context, r *order.ExistingOrder) (*
 }
 
 // PrepareForOrder clears the database to prepare for loading data
-func (s *OrderService) PrepareForOrder(ctx context.Context, e *empty.Empty) (*empty.Empty, error) {
+func (s *OrderService) PrepareForOrder(ctx context.Context, r *empty.Empty) (*empty.Empty, error) {
 	e := &empty.Empty{}
 	if err := s.repo.ClearOrders(); err != nil {
 		return e, aphgrpc.HandleGenericError(ctx, err)

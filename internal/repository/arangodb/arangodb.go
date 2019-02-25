@@ -227,18 +227,10 @@ func addableOrderBindParams(attr *order.NewOrderAttributes) map[string]interface
 
 func existingOrderBindParams(attr *order.ExistingOrderAttributes) map[string]interface{} {
 	return map[string]interface{}{
-		"created_at":         ptypes.TimestampString(attr.CreatedAt),
-		"updated_at":         ptypes.TimestampString(attr.CreatedAt),
-		"courier":            attr.Courier,
-		"courier_account":    attr.CourierAccount,
-		"comments":           normalizeStrBindParam(attr.Comments),
-		"payment":            attr.Payment,
-		"purchase_order_num": attr.PurchaseOrderNum,
-		"status":             attr.Status.String(),
-		"consumer":           attr.Consumer,
-		"payer":              attr.Payer,
-		"purchaser":          attr.Purchaser,
-		"items":              attr.Items,
+		"created_at": ptypes.TimestampString(attr.CreatedAt),
+		"updated_at": ptypes.TimestampString(attr.CreatedAt),
+		"purchaser":  attr.Purchaser,
+		"items":      attr.Items,
 	}
 }
 
