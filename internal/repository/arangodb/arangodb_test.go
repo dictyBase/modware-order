@@ -331,6 +331,36 @@ func TestLoadOrder(t *testing.T) {
 	assert.NotEmpty(m.Key, "should not have empty key/id")
 }
 
+func TestClearOrders(t *testing.T) {
+	connP := getConnectParams()
+	repo, err := NewOrderRepo(connP, collection)
+	if err != nil {
+		t.Fatalf("error in connecting to order repository %s", err)
+	}
+	// add 15 new test orders
+	for i := 1; i <= 15; i++ {
+		no := newTestOrder(fmt.Sprintf("%s@kramericaindustries.com", RandString(10)))
+		_, err := repo.AddOrder(no)
+		if err != nil {
+			t.Fatalf("error in adding order %s", err)
+		}
+	}
+	lo, err := repo.ListOrders(&order.ListParameters{Limit: 100})
+	if err != nil {
+		t.Fatalf("error in listing orders %s", err)
+	}
+	assert := assert.New(t)
+	assert.Len(lo, 15, "should have 15 orders in database")
+	if err := repo.ClearOrders(); err != nil {
+		t.Fatalf("error clearing database %s", err)
+	}
+	lo2, err := repo.ListOrders(&order.ListParameters{Limit: 100})
+	if err != nil {
+		t.Fatalf("error in listing orders %s", err)
+	}
+	assert.Len(lo2, 0, "should not list any orders")
+}
+
 func testModelListSort(m []*model.OrderDoc, t *testing.T) {
 	it, err := NewPairWiseIterator(m)
 	if err != nil {
