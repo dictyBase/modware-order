@@ -51,6 +51,10 @@ OPTIONS:
    --reflection, --ref                    flag for enabling server reflection
 ```
 
+## Default Names
+
+There is only one collection, and its default name is **stock_order**.
+
 # API
 
 ### gRPC
