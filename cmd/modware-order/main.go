@@ -76,7 +76,7 @@ func main() {
 				cli.StringFlag{
 					Name:  "port",
 					Usage: "tcp port at which the server will be available",
-					Value: "9560",
+					Value: "9599",
 				},
 				cli.StringFlag{
 					Name:  "order-collection",
