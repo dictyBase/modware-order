@@ -147,9 +147,14 @@ func (s *OrderService) UpdateOrder(ctx context.Context, r *order.OrderUpdate) (*
 // ListOrders lists all existing orders
 func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) (*order.OrderCollection, error) {
 	oc := &order.OrderCollection{}
+	var l int64
 	c := r.Cursor
-	l := r.Limit
 	f := r.Filter
+	if r.Limit == 0 {
+		l = 10
+	} else {
+		l = r.Limit
+	}
 	if len(f) > 0 {
 		p, err := query.ParseFilterString(f)
 		if err != nil {
@@ -191,14 +196,14 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 				},
 			})
 		}
-		if len(ocdata) < int(r.Limit)-2 { // fewer results than limit
+		if len(ocdata) < int(l)-2 { // fewer results than limit
 			oc.Data = ocdata
-			oc.Meta = &order.Meta{Limit: r.Limit, Total: int64(len(ocdata))}
+			oc.Meta = &order.Meta{Limit: l, Total: int64(len(ocdata))}
 			return oc, nil
 		}
 		oc.Data = ocdata[:len(ocdata)-1]
 		oc.Meta = &order.Meta{
-			Limit:      r.Limit,
+			Limit:      l,
 			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
 			Total:      int64(len(ocdata)),
 		}
@@ -231,14 +236,14 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 				},
 			})
 		}
-		if len(ocdata) < int(r.Limit)-2 { // fewer results than limit
+		if len(ocdata) < int(l)-2 { // fewer results than limit
 			oc.Data = ocdata
-			oc.Meta = &order.Meta{Limit: r.Limit, Total: int64(len(ocdata))}
+			oc.Meta = &order.Meta{Limit: l, Total: int64(len(ocdata))}
 			return oc, nil
 		}
 		oc.Data = ocdata[:len(ocdata)-1]
 		oc.Meta = &order.Meta{
-			Limit:      r.Limit,
+			Limit:      l,
 			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
 			Total:      int64(len(ocdata)),
 		}
