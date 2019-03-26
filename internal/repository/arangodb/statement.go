@@ -32,7 +32,7 @@ const (
 	`
 	orderUpd = `
 		UPDATE { _key: @key }
-			WITH { %s }
+			WITH { updated_at: DATE_ISO8601(DATE_NOW()), %s }
 			IN @@stock_order_collection RETURN NEW
 	`
 	orderList = `
