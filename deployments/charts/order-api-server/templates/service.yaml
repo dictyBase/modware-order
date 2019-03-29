@@ -14,4 +14,4 @@ spec:
     port: {{ .Values.service.port  }}
     targetPort: {{ .Values.service.name | quote }}   
   selector:
-app: {{ template "order-api.fullname" . }}
+    app: {{ template "order-api.fullname" . }}
