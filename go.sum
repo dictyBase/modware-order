@@ -14,8 +14,6 @@ github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073 h1:/4yHFOkL4N
 github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073/go.mod h1:WMCcrIvQoc3UBfA643QFDQufK2a+7mYGgkGxVFWfJus=
 github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68 h1:9tMcTXGxsT+I7G4aCQPXzyU0GNYbXt+En3JtoHxgzfc=
 github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68/go.mod h1:ZKfo7JHpT9KfmJEJwZLhwoyCRBxIPW+IeX+13eUEIlg=
-github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5 h1:maFOX6k2cUE58L9Bj3NNq0M90YIqYWZ5Bq5qnQdVllo=
-github.com/dictyBase/go-genproto v0.0.0-20190221201930-e74be4d392e5/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
 github.com/dictyBase/go-genproto v0.0.0-20190225231732-662920fc4435 h1:YQqLUFXJVTfZxrHuyhW/B1imp+Kq+hKHUW8Rdd5ec4Y=
 github.com/dictyBase/go-genproto v0.0.0-20190225231732-662920fc4435/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
