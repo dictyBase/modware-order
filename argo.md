@@ -1,1 +1,1 @@
-argo testing
+argo test
