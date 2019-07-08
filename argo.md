@@ -1,1 +1,1 @@
-argo test abc
+argo test
