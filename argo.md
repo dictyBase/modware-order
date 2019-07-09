@@ -1,1 +1,1 @@
-argo test 123
+argo test
