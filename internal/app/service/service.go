@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"time"
 
 	"github.com/dictyBase/apihelpers/aphgrpc"
 	"github.com/dictyBase/arangomanager/query"
@@ -204,7 +204,7 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 		oc.Data = ocdata[:len(ocdata)-1]
 		oc.Meta = &order.Meta{
 			Limit:      l,
-			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
+			NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
 			Total:      int64(len(ocdata)),
 		}
 	} else {
@@ -244,7 +244,7 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 		oc.Data = ocdata[:len(ocdata)-1]
 		oc.Meta = &order.Meta{
 			Limit:      l,
-			NextCursor: genNextCursorVal(ocdata[len(ocdata)-1]),
+			NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
 			Total:      int64(len(ocdata)),
 		}
 	}
@@ -295,13 +295,10 @@ func (s *OrderService) PrepareForOrder(ctx context.Context, r *empty.Empty) (*em
 	return e, nil
 }
 
-func genNextCursorVal(ocd *order.OrderCollection_Data) int64 {
-	tint, _ := strconv.ParseInt(
-		fmt.Sprintf("%d%d", ocd.Attributes.CreatedAt.GetSeconds(), ocd.Attributes.CreatedAt.GetNanos()),
-		10,
-		64,
-	)
-	return tint / 1000000
+// genNextCursorVal converts to epoch(https://en.wikipedia.org/wiki/Unix_time)
+// in milliseconds
+func genNextCursorVal(t time.Time) int64 {
+	return t.UnixNano() / 1000000
 }
 
 func statusToEnum(status string) order.OrderStatus {

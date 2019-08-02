@@ -1,45 +1,17 @@
 module github.com/dictyBase/modware-order
 
 require (
-	github.com/arangodb/go-driver v0.0.0-20181206080103-b1a864427d13
-	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
-	github.com/dictyBase/apihelpers v0.0.0-20181206195845-f89e7429b073
-	github.com/dictyBase/arangomanager v0.0.0-20190211195628-971aad3cbd68
-	github.com/dictyBase/go-genproto v0.0.0-20190225231732-662920fc4435
-	github.com/garyburd/redigo v1.6.0 // indirect
-	github.com/go-sql-driver/mysql v1.4.1 // indirect
-	github.com/gogo/protobuf v1.1.1 // indirect
-	github.com/golang/protobuf v1.2.0
+	github.com/arangodb/go-driver v0.0.0-20190724115106-663f655c9ebe
+	github.com/coreos/go-iptables v0.4.0 // indirect
+	github.com/dictyBase/apihelpers v0.0.0-20190516195304-f1adf8d9f18d
+	github.com/dictyBase/arangomanager v0.0.0-20190611150137-a945fd12a72e
+	github.com/dictyBase/go-genproto v0.0.0-20190608110615-02f4ede4f72a
+	github.com/dictyBase/modware-annotation v0.0.0-20190801232929-32160008f728 // indirect
+	github.com/golang/protobuf v1.3.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
-	github.com/grpc-ecosystem/grpc-gateway v1.6.2 // indirect
-	github.com/jmoiron/sqlx v1.2.0 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
-	github.com/mattn/go-sqlite3 v1.10.0 // indirect
-	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
-	github.com/mgutz/jo v1.1.0 // indirect
-	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
-	github.com/mgutz/str v1.2.0 // indirect
-	github.com/mgutz/to v1.0.0 // indirect
-	github.com/mwitkow/go-proto-validators v0.0.0-20180403085117-0950a7990007 // indirect
-	github.com/nats-io/gnatsd v1.3.0 // indirect
-	github.com/nats-io/go-nats v1.6.0
-	github.com/nats-io/nuid v1.0.0 // indirect
-	github.com/pkg/errors v0.8.0 // indirect
-	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/sirupsen/logrus v1.2.0
-	github.com/stretchr/testify v1.2.2
-	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
-	golang.org/x/net v0.0.0-20181207154023-610586996380 // indirect
-	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f // indirect
-	golang.org/x/sys v0.0.0-20181210030007-2a47403f2ae5 // indirect
-	google.golang.org/appengine v1.3.0 // indirect
-	google.golang.org/genproto v0.0.0-20181202183823-bd91e49a0898 // indirect
-	google.golang.org/grpc v1.17.0
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/mgutz/dat.v2 v2.0.0-20171004160617-d76e4f81c4ef // indirect
-	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
+	github.com/nats-io/go-nats v1.7.2
+	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
+	google.golang.org/grpc v1.20.1
 	gopkg.in/urfave/cli.v1 v1.20.0
 )
