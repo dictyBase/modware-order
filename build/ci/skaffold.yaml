@@ -1,4 +1,4 @@
-apiVersion: skaffold/v1beta10
+apiVersion: skaffold/v1beta13
 kind: Config
 build:
     tagPolicy:
@@ -6,14 +6,6 @@ build:
             template: "{{.IMAGE_NAME}}:{{.IMAGE_TAG}}"
     artifacts:
         - image: dictybase/modware-order
-          kaniko:
+          docker:
             dockerfile: build/package/Dockerfile
-            buildContext:
-              localDir: {}
-            cache: 
-                repo: dictybase/modware-order-cache
-    cluster:
-        namespace: kaniko
-        pullSecretName: docker-secret
-        dockerConfig:
-            secretName: docker-secret
+    local: {}
