@@ -7,18 +7,21 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      arangodb:
+        image: arangodb:3.3.23
+        env:
+          ARANGO_USER: root
+          ARANGO_PASS: rootpass
     steps:
       - uses: actions/checkout@v1
-      - id: arangodb
-        name: start arangodb server
-        env:
-          # ARANGO_ROOT_PASSWORD: ${{ secrets.ARANGO_ROOT_PASSWORD }}
-          ARANGO_ROOT_PASSWORD: vandelay
-        uses: docker://arangodb:3.3.23
       - name: use go 1.11.13
         uses: actions/setup-go@v1
         with:
           go-version: "1.11.13"
       - name: run unit tests
+        working-directory: ./arangodb
+        env:
+          ARANGO_HOST: arangodb
         run: |
           go test -v ./...
