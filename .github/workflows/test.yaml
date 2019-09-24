@@ -21,6 +21,8 @@ jobs:
           go-version: "1.11.13"
       - name: run unit tests
         env:
+          ARANGO_USER: root
+          ARANGO_PASS: rootpass
           ARANGO_HOST: arangodb
         run: |
           go test -v ./...
