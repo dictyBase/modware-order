@@ -26,6 +26,4 @@ jobs:
           ARANGO_HOST: arangodb
           ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
         run: |
-          netstat -anp tcp | grep LISTEN
-          echo ${{ job.services.arangodb.ports[8529] }}
           go test -v ./...
