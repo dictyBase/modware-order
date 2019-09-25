@@ -17,15 +17,11 @@ jobs:
           - 8529/tcp
     steps:
       - uses: actions/checkout@v1
-      # - name: use go 1.11.13
-      #   working-directory: ./arangodb
-      #   uses: actions/setup-go@v1
-      #   with:
-      #     go-version: "1.11.13"
-      - name: run unit tests
+      - name: use go 1.11.13
         uses: actions/setup-go@v1
         with:
           go-version: "1.11.13"
+      - name: run unit tests
         working-directory: ./arangodb
         env:
           ARANGO_USER: root
