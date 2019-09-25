@@ -13,6 +13,8 @@ jobs:
         env:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
+          ARANGO_HOST: arangodb
+          ARANGO_PORT: 8529
     steps:
       - uses: actions/checkout@v1
       - name: use go 1.11.13
@@ -24,5 +26,6 @@ jobs:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
           ARANGO_HOST: arangodb
+          ARANGO_PORT: 8529
         run: |
           go test -v ./...
