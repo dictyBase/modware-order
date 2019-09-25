@@ -7,6 +7,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: golang:1.11.13
     services:
       arangodb:
         image: arangodb:3.3.23
@@ -17,15 +19,11 @@ jobs:
           - 8529/tcp
     steps:
       - uses: actions/checkout@v1
-      - name: use go 1.11.13
-        uses: actions/setup-go@v1
-        with:
-          go-version: "1.11.13"
       - name: run unit tests
         env:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
-          ARANGO_HOST: localhost
+          ARANGO_HOST: arangodb
           ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
         run: |
           netstat -anp tcp | grep LISTEN
