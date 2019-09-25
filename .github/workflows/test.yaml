@@ -29,4 +29,4 @@ jobs:
           ARANGO_HOST: localhost
           ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
         run: |
-          ls
+          netstat -anp tcp | grep LISTEN
