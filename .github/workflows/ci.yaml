@@ -33,7 +33,7 @@ jobs:
             #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
 
       - name: uni test
-        run: go test -covermode=count -coverprofile=profile.cov
+        run: go test -covermode=count -coverprofile=profile.cov -v ./...
         env:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
