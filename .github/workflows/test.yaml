@@ -11,8 +11,7 @@ jobs:
       arangodb:
         image: arangodb:3.3.23
         env:
-          ARANGO_USER: root
-          ARANGO_PASS: rootpass
+          ARANGO_ROOT_PASSWORD: rootpass
         ports:
           - 8529/tcp
     steps:
