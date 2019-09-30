@@ -1,8 +1,5 @@
-name: Continuous integration
-on: [push,pull_request]
-  # push:
-  #   branches:
-  #     - develop
+name: Test coverage
+on: pull_request
 jobs:
   test:
     runs-on: ubuntu-18.04
@@ -22,16 +19,6 @@ jobs:
       - name: check out code
         uses: actions/checkout@v1
 
-      #- name: download test reporter
-        #run: |
-            #curl -L -o cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
-            #chmod +x cc-test-reporter
-
-      #- name: before test coverage
-        #run: ./cc-test-reporter before-build
-        #env:
-            #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
-
       - name: unit test
         run: go test -covermode=atomic -coverprofile=profile.cov -v ./...
         env:
@@ -46,11 +33,3 @@ jobs:
         with:
             file: ./profile.cov
             token: ${{ secrets.CODECOV_TOKEN }}
-
-      #- name: after test coverage
-        #run: |
-            #export GIT_BRANCH=$(echo ${GITHUB_REF} | sed -E 's/refs\/(heads|tags)\///')
-            #./cc-test-reporter after-build
-        #env:
-            #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
-            #GIT_COMMIT_SHA: ${{ github.sha }}
