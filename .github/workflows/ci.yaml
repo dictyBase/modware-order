@@ -32,16 +32,18 @@ jobs:
         #env:
             #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
 
-      - name: test and publish coverage
-        uses: paambaati/codeclimate-action@v2.2.1
+      - name: uni test
+        run: go test -covermode=count -coverprofile=profile.cov
         env:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
           ARANGO_HOST: localhost
           ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
+
+      - name: upload coverage to coveralls
+        uses: coverallsapp/github-action@master
         with:
-            coverageCommand: go test -coverprofile c.out -v ./...
+            path-to-lcov: ./profile.cov
 
       #- name: after test coverage
         #run: |
