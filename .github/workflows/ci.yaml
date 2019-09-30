@@ -24,7 +24,7 @@ jobs:
 
       - name: download test reporter
         run: |
-            curl -o cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
+            curl -L -o cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
             chmod +x cc-test-reporter
 
       - name: before test coverage
