@@ -22,28 +22,31 @@ jobs:
       - name: check out code
         uses: actions/checkout@v1
 
-      - name: download test reporter
-        run: |
-            curl -L -o cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
-            chmod +x cc-test-reporter
+      #- name: download test reporter
+        #run: |
+            #curl -L -o cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
+            #chmod +x cc-test-reporter
 
-      - name: before test coverage
-        run: ./cc-test-reporter before-build
-        env:
-            CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
+      #- name: before test coverage
+        #run: ./cc-test-reporter before-build
+        #env:
+            #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
 
-      - name: run test coverage
+      - name: test and publish coverage
+        uses: paambaati/codeclimate-action@v2.2.1
         env:
           ARANGO_USER: root
           ARANGO_PASS: rootpass
           ARANGO_HOST: localhost
           ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
-        run: go test -coverprofile c.out -v ./...
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
+        with:
+            coverageCommand: go test -coverprofile c.out -v ./...
 
-      - name: after test coverage
-        run: |
-            export GIT_BRANCH=$(echo ${GITHUB_REF} | sed -E 's/refs\/(heads|tags)\///')
-            ./cc-test-reporter after-build
-        env:
-            CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
-            GIT_COMMIT_SHA: ${{ github.sha }}
+      #- name: after test coverage
+        #run: |
+            #export GIT_BRANCH=$(echo ${GITHUB_REF} | sed -E 's/refs\/(heads|tags)\///')
+            #./cc-test-reporter after-build
+        #env:
+            #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_ID }}
+            #GIT_COMMIT_SHA: ${{ github.sha }}
