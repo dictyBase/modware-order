@@ -20,7 +20,9 @@ jobs:
         env:
             GO111MODULE: on
       - name: check lint binary
-        run: ls -lhtR ${GOPATH}
+        run: ls -lhtR /home/runner
+      - name: check path
+        run: echo ${PATH}
       #- name: print help
         #run: golangci-lint help
         #env:
