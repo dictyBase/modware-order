@@ -17,9 +17,7 @@ jobs:
             GOPROXY: https://proxy.golang.org
       - name: check folder
         run: |
-            ls -lht /home/runner/go
-            echo ${PWD}
-            ls -lht ${PWD}
+            ls -lht /home/runner/go/bin
       #- name: run linter
         #run: $(which golangci-lint) -c .golangci.yml -v 
         #env:
