@@ -16,11 +16,10 @@ jobs:
             GO111MODULE: on
             GOPROXY: https://proxy.golang.org
       - name: check folder
-        run: ls -lht /opt/hostedtoolcache/go/1.11.13/x64/bin/
-      - name: print help
-        run: golangci-lint help
-        env:
-            GO111MODULE: on
+        run: |
+            ls -lht /home/runner/go
+            echo ${PWD}
+            ls -lht ${PWD}
       #- name: run linter
         #run: $(which golangci-lint) -c .golangci.yml -v 
         #env:
