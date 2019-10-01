@@ -18,6 +18,8 @@ jobs:
       - name: check folder
         run: |
             ls -lht /home/runner/go/bin
+      - name: linter help
+        run: $(go env GOPATH)/bin/golangci-lint help
       #- name: run linter
         #run: $(which golangci-lint) -c .golangci.yml -v 
         #env:
