@@ -10,21 +10,21 @@ jobs:
             go-version: 1.11.13
       - name: check out code
         uses: actions/checkout@v1
-      - name: install golangci-lint
-        run: go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.19.1
-        env:
-            GO111MODULE: on
-            GOPROXY: https://proxy.golang.org
+      #- name: install golangci-lint
+        #run: go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.19.1
+        #env:
+            #GO111MODULE: on
+            #GOPROXY: https://proxy.golang.org
       - name: check env
         run: go env
         env:
             GO111MODULE: on
       - name: check lint binary
-        run: which golangci-lint
-      - name: print help
-        run: golangci-lint help
-        env:
-            GO111MODULE: on
+        run: ls -lhtR ${GOPATH}
+      #- name: print help
+        #run: golangci-lint help
+        #env:
+            #GO111MODULE: on
       #- name: run linter
         #run: $(which golangci-lint) -c .golangci.yml -v 
         #env:
