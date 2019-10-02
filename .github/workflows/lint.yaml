@@ -18,6 +18,6 @@ jobs:
             GO111MODULE: on
             GOPROXY: https://proxy.golang.org
       - name: run linter
-        run: $(go env GOPATH)/bin/golangci-lint -c .golangci.yml -v 
+        run: $(go env GOPATH)/bin/golangci-lint -v 
         env:
             GO111MODULE: on
