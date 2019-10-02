@@ -47,6 +47,6 @@ jobs:
       - name: build docker image
         run: docker build -t dictybase/modware-order:develop-$(git rev-parse --short HEAD) -f build/package/Dockerfile .
       - name: login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USER }} -p {{ secrets.DOCKER_PASSWORD }}
+        run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: push to docker hub
         run: docker push dictybase/modware-order:develop-$(git rev-parse --short HEAD)
