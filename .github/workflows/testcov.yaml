@@ -1,8 +1,17 @@
 name: Test coverage
-on: pull_request
+on: 
+ pull_request:
+    types: [opened,reopened,edited]
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-18.04
+    services:
+      arangodb:
+        image: arangodb:3.3.23
+        env:
+          ARANGO_ROOT_PASSWORD: rootpass
+        ports:
+          - 8529/tcp
     steps:
       - name: set up golang
         uses: actions/setup-go@v1
@@ -10,47 +19,16 @@ jobs:
             go-version: 1.11.13
       - name: check out code
         uses: actions/checkout@v1
-      - name: install golangci-lint
-        run: go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.19.1
+      - name: unit test
+        run: go test -covermode=atomic -coverprofile=profile.cov -v ./...
         env:
-            GO111MODULE: on
-            GOPROXY: https://proxy.golang.org
-      - name: check folder
-        run: |
-            ls -lht /home/runner/go/bin
-      - name: linter help
-        run: $(go env GOPATH)/bin/golangci-lint help
-      #- name: run linter
-        #run: $(which golangci-lint) -c .golangci.yml -v 
-        #env:
-            #GO111MODULE: on
-
-  #test:
-    #runs-on: ubuntu-18.04
-    #services:
-      #arangodb:
-        #image: arangodb:3.3.23
-        #env:
-          #ARANGO_ROOT_PASSWORD: rootpass
-        #ports:
-          #- 8529/tcp
-    #steps:
-      #- name: set up golang
-        #uses: actions/setup-go@v1
-        #with:
-            #go-version: 1.11.13
-      #- name: check out code
-        #uses: actions/checkout@v1
-      #- name: unit test
-        #run: go test -covermode=atomic -coverprofile=profile.cov -v ./...
-        #env:
-          #ARANGO_USER: root
-          #ARANGO_PASS: rootpass
-          #ARANGO_HOST: localhost
-          #ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
-          #GOPROXY: https://proxy.golang.org
-      #- name: upload coverage to codecov
-        #uses: codecov/codecov-action@v1.0.2
-        #with:
-            #file: ./profile.cov
-            #token: ${{ secrets.CODECOV_TOKEN }}
+          ARANGO_USER: root
+          ARANGO_PASS: rootpass
+          ARANGO_HOST: localhost
+          ARANGO_PORT: ${{ job.services.arangodb.ports[8529] }}
+          GOPROXY: https://proxy.golang.org
+      - name: upload coverage to codecov
+        uses: codecov/codecov-action@v1.0.2
+        with:
+            file: ./profile.cov
+            token: ${{ secrets.CODECOV_TOKEN }}
