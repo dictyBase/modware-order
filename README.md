@@ -1,6 +1,30 @@
 # modware-order
-
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](LICENSE)   
 [![Go Report Card](https://goreportcard.com/badge/github.com/dictybase/modware-order)](https://goreportcard.com/report/github.com/dictybase/modware-order)
+![](https://github.com/dictyBase/modware-order/workflows/.github/workflows/ci.yaml/badge.svg)
+[![godoc](https://godoc.org/github.com/dictyBase/modware-order?status.svg)](https://godoc.org/github.com/dictyBase/modware-order)
+[![codecov](https://codecov.io/gh/dictyBase/modware-order/branch/develop/graph/badge.svg)](https://codecov.io/gh/dictyBase/modware-order)   
+[![Technical debt](https://badgen.net/codeclimate/tech-debt/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order/trends/technical_debt)
+[![Issues](https://badgen.net/codeclimate/issues/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order/issues)
+[![Maintainability percentage](https://badgen.net/codeclimate/maintainability-percentage/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=dictyBase/modware-order)](https://dependabot.com)   
+![Issues](https://badgen.net/github/issues/dictyBase/modware-order)
+![Open Issues](https://badgen.net/github/open-issues/dictyBase/modware-order)
+![Closed Issues](https://badgen.net/github/closed-issues/dictyBase/modware-order)   
+![Total PRS](https://badgen.net/github/prs/dictyBase/modware-order)
+![Open PRS](https://badgen.net/github/open-prs/dictyBase/modware-order)
+![Closed PRS](https://badgen.net/github/closed-prs/dictyBase/modware-order)
+![Merged PRS](https://badgen.net/github/merged-prs/dictyBase/modware-order)   
+![Commits](https://badgen.net/github/commits/dictyBase/modware-order/develop)
+![Last commit](https://badgen.net/github/last-commit/dictyBase/modware-order/develop)
+![Branches](https://badgen.net/github/branches/dictyBase/modware-order)
+![Tags](https://badgen.net/github/tags/dictyBase/modware-order)   
+![GitHub repo size](https://img.shields.io/github/repo-size/dictyBase/modware-order?style=plastic)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/dictyBase/modware-order?style=plastic)
+[![Lines of Code](https://badgen.net/codeclimate/loc/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order/code)   
+[![Funding](https://badgen.net/badge/NIGMS/Rex%20L%20Chisholm,dictyBase/yellow?list=|)](https://projectreporter.nih.gov/project_info_description.cfm?aid=9476993)
+[![Funding](https://badgen.net/badge/NIGMS/Rex%20L%20Chisholm,DSC/yellow?list=|)](https://projectreporter.nih.gov/project_info_description.cfm?aid=9438930)
+
 
 dictyBase API server to manage order of biological stocks. The API server supports gRPC protocol for data exchange.
 
