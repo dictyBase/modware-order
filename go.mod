@@ -7,7 +7,7 @@ require (
 	github.com/dictyBase/arangomanager v0.0.0-20190611150137-a945fd12a72e
 	github.com/dictyBase/go-genproto v0.0.0-20190608110615-02f4ede4f72a
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
