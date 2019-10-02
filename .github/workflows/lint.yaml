@@ -1,7 +1,7 @@
 name: Lint golang code 
 on: 
   pull_request:
-    types: [opened,reopened,edited]
+    types: [opened,reopened,edited,synchronize,assigned,unassigned,ready_for_review]
 jobs:
   lint:
     runs-on: ubuntu-18.04
