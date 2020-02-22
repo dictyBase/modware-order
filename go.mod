@@ -17,7 +17,7 @@ require (
 	github.com/nats-io/gnatsd v1.3.0 // indirect
 	github.com/nats-io/go-nats v1.7.2
 	github.com/sirupsen/logrus v1.4.2
-	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
+	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.22.1
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
 	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
