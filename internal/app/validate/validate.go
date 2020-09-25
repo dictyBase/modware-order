@@ -6,8 +6,8 @@ import (
 	"github.com/urfave/cli"
 )
 
-// ValidateServerArgs validates that the necessary flags are not missing
-func ValidateServerArgs(c *cli.Context) error {
+// ServerArgs validates that the necessary flags are not missing
+func ServerArgs(c *cli.Context) error {
 	for _, p := range []string{
 		"arangodb-pass",
 		"arangodb-database",
