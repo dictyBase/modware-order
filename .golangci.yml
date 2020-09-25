@@ -1,3 +1,8 @@
+linters-settings:
+   lll:
+      line-length: 2380
+   funlen:
+      lines: 75
 linters:
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
@@ -9,13 +14,11 @@ linters:
     - errcheck
     - funlen
     - gochecknoinits
-    - gochecknoglobals
     - goconst
     - gocritic
     - gocyclo
     - gofmt
     - goimports
-    - golint
     - gosec
     - gosimple
     - govet
@@ -24,7 +27,6 @@ linters:
     - lll
     - misspell
     - nakedret
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -36,6 +38,8 @@ linters:
     - whitespace
 
   # don't enable:
+  # - scopelint (obsoloete)
   # - godox
   # - maligned,prealloc
   # - gochecknoglobals
+  # - golint
