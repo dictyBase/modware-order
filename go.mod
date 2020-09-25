@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.22.1
 	google.golang.org/appengine v1.6.0 // indirect
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.32.0
 	gopkg.in/go-playground/validator.v9 v9.29.1 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )
