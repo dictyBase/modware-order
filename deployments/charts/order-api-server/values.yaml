@@ -13,12 +13,16 @@ image:
 ##  Arangodb database
 # connection endpoint http or https (ssl)
 endpoint: https
-##
-# credentials for connection
-# database:
-# name:
-# user:
-# password:
+
+# values for database
+dictybaseConfiguration:
+  configMap:
+    name: dictybase-configuration
+    user: arangodb.user
+    database: arangodb.modware-order
+  secrets:
+    name: dictybase-configuration
+    password: arangodb.password
 
 service:
   name: order-api
