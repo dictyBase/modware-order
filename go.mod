@@ -16,7 +16,7 @@ require (
 	github.com/mgutz/to v1.0.0 // indirect
 	github.com/nats-io/gnatsd v1.3.0 // indirect
 	github.com/nats-io/go-nats v1.7.2
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.22.1
 	google.golang.org/appengine v1.6.0 // indirect
