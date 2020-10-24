@@ -10,7 +10,6 @@ require (
 	github.com/golang/protobuf v1.3.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/mgutz/jo v1.1.0 // indirect
 	github.com/mgutz/to v1.0.0 // indirect
@@ -20,7 +19,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.22.1
 	google.golang.org/appengine v1.6.0 // indirect
-	google.golang.org/grpc v1.32.0
+	google.golang.org/grpc v1.33.1
 	gopkg.in/go-playground/validator.v9 v9.29.1 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )
