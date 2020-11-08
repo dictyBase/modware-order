@@ -17,7 +17,7 @@ require (
 	github.com/nats-io/go-nats v1.7.2
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.4.0
-	github.com/urfave/cli v1.22.1
+	github.com/urfave/cli v1.22.5
 	google.golang.org/appengine v1.6.0 // indirect
 	google.golang.org/grpc v1.33.2
 	gopkg.in/go-playground/validator.v9 v9.29.1 // indirect
