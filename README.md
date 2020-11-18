@@ -1,8 +1,10 @@
 # modware-order
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](LICENSE)  
-[![codecov](https://codecov.io/gh/dictyBase/modware-order/branch/develop/graph/badge.svg)](https://codecov.io/gh/dictyBase/modware-order)  
-[![Maintainability percentage](https://badgen.net/codeclimate/maintainability-percentage/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order)  
-![Last commit](https://badgen.net/github/last-commit/dictyBase/modware-order/develop)
+![Continuous integration](https://github.com/dictyBase/modware-order/workflows/Continuous%20integration/badge.svg)
+[![codecov](https://codecov.io/gh/dictyBase/modware-order/branch/develop/graph/badge.svg)](https://codecov.io/gh/dictyBase/modware-order)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f6b7067bd24eab14ba0d/maintainability)](https://codeclimate.com/github/dictyBase/modware-order/maintainability)   
+![Last commit](https://badgen.net/github/last-commit/dictyBase/modware-order/develop)   
+[![Funding](https://badgen.net/badge/Funding/Rex%20L%20Chisholm,dictyBase,DCR/yellow?list=|)](https://projectreporter.nih.gov/project_info_description.cfm?aid=10024726&icde=0)
 
 dictyBase API server to manage order of biological stocks. The API server supports gRPC protocol for data exchange.
 
