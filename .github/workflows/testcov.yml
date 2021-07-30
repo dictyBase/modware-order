@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-20.04
     services:
       arangodb:
-        image: arangodb:3.5.6
+        image: arangodb:3.6.3
         env:
           ARANGO_ROOT_PASSWORD: rootpass
         ports:
