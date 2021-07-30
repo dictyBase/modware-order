@@ -16,6 +16,7 @@ import (
 
 // OrderService is the container for managing order service definition
 type OrderService struct {
+	order.UnimplementedOrderServiceServer
 	*aphgrpc.Service
 	repo      repository.OrderRepository
 	publisher message.Publisher
@@ -304,13 +305,13 @@ func genNextCursorVal(t time.Time) int64 {
 func statusToEnum(status string) order.OrderStatus {
 	switch status {
 	case "Shipped":
-		return order.OrderStatus_Shipped
+		return order.OrderStatus_SHIPPED
 	case "Cancelled":
-		return order.OrderStatus_Cancelled
+		return order.OrderStatus_CANCELLED
 	case "Growing":
-		return order.OrderStatus_Growing
+		return order.OrderStatus_GROWING
 	default:
 		break
 	}
-	return order.OrderStatus_In_preparation
+	return order.OrderStatus_IN_PREPARATION
 }
