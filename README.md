@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dictyBase/modware-order/branch/develop/graph/badge.svg)](https://codecov.io/gh/dictyBase/modware-order)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f6b7067bd24eab14ba0d/maintainability)](https://codeclimate.com/github/dictyBase/modware-order/maintainability)   
 ![Last commit](https://badgen.net/github/last-commit/dictyBase/modware-order/develop)   
-[![Funding](https://badgen.net/badge/Funding/Rex%20L%20Chisholm,dictyBase,DCR/yellow?list=|)](https://projectreporter.nih.gov/project_info_description.cfm?aid=10024726&icde=0)
+[![Funding](https://badgen.net/badge/Funding/Rex%20L%20Chisholm,dictyBase,DCR/yellow?list=|)](https://reporter.nih.gov/project-details/10024726)
 
 dictyBase API server to manage order of biological stocks. The API server supports gRPC protocol for data exchange.
 
