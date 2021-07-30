@@ -1,4 +1,4 @@
-FROM golang:1.13.15-buster AS builder
+FROM golang:1.16.5-buster AS builder
 LABEL maintainer="Siddhartha Basu <siddhartha-basu@northwestern.edu>"
 ENV GOPROXY https://proxy.golang.org
 ENV GO111MODULE=on \
