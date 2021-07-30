@@ -46,7 +46,7 @@ func newTestOrder(consumer string) *order.NewOrder {
 				Comments:         "This is a test comment",
 				Payment:          "Credit card",
 				PurchaseOrderNum: "38975932199",
-				Status:           order.OrderStatus_In_preparation,
+				Status:           order.OrderStatus_IN_PREPARATION,
 				Consumer:         consumer,
 				Payer:            "dr.van.nostrand@gmail.com",
 				Purchaser:        "dr.van.nostrand@gmail.com",
@@ -171,7 +171,7 @@ func TestEditOrder(t *testing.T) {
 				Payment:          "Check",
 				PurchaseOrderNum: "33333333",
 				Items:            []string{"xyz", "abc"},
-				Status:           order.OrderStatus_Growing,
+				Status:           order.OrderStatus_GROWING,
 			},
 		},
 	}
