@@ -76,6 +76,4 @@ The protocol buffer definitions and service apis are documented
 ![Commits](https://badgen.net/github/commits/dictyBase/modware-order/develop)
 ![Branches](https://badgen.net/github/branches/dictyBase/modware-order)
 ![Tags](https://badgen.net/github/tags/dictyBase/modware-order)  
-![GitHub repo size](https://img.shields.io/github/repo-size/dictyBase/modware-order?style=plastic)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/dictyBase/modware-order?style=plastic)
 [![Lines of Code](https://badgen.net/codeclimate/loc/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order/code)  
