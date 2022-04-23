@@ -13,7 +13,7 @@ require (
 	github.com/nats-io/go-nats v1.7.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/urfave/cli v1.22.5
+	github.com/urfave/cli v1.22.7
 	google.golang.org/appengine v1.6.0 // indirect
 	google.golang.org/grpc v1.39.0
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
