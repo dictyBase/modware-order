@@ -11,7 +11,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/nats-io/go-nats v1.7.2
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
 	google.golang.org/appengine v1.6.0 // indirect
