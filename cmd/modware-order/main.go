@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/dictyBase/modware-order/internal/app/server"
@@ -31,64 +32,70 @@ func main() {
 			Usage:  "starts the modware-order microservice with grpc backends",
 			Action: server.RunServer,
 			Before: validate.ServerArgs,
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:   "arangodb-pass, pass",
-					EnvVar: "ARANGODB_PASS",
-					Usage:  "arangodb database password",
-				},
-				cli.StringFlag{
-					Name:   "arangodb-database, db",
-					EnvVar: "ARANGODB_DATABASE",
-					Usage:  "arangodb database name",
-				},
-				cli.StringFlag{
-					Name:   "arangodb-user, user",
-					EnvVar: "ARANGODB_USER",
-					Usage:  "arangodb database user",
-				},
-				cli.StringFlag{
-					Name:   "arangodb-host, host",
-					Value:  "arangodb",
-					EnvVar: "ARANGODB_SERVICE_HOST",
-					Usage:  "arangodb database host",
-				},
-				cli.StringFlag{
-					Name:   "arangodb-port",
-					EnvVar: "ARANGODB_SERVICE_PORT",
-					Usage:  "arangodb database port",
-					Value:  "8529",
-				},
-				cli.BoolTFlag{
-					Name:  "is-secure",
-					Usage: "flag for secured or unsecured arangodb endpoint",
-				},
-				cli.StringFlag{
-					Name:   "nats-host",
-					EnvVar: "NATS_SERVICE_HOST",
-					Usage:  "nats messaging server host",
-				},
-				cli.StringFlag{
-					Name:   "nats-port",
-					EnvVar: "NATS_SERVICE_PORT",
-					Usage:  "nats messaging server port",
-				},
-				cli.StringFlag{
-					Name:  "port",
-					Usage: "tcp port at which the server will be available",
-					Value: "9599",
-				},
-				cli.StringFlag{
-					Name:  "order-collection",
-					Usage: "arangodb collection for storing stock orders",
-					Value: "stock_order",
-				},
-				cli.BoolTFlag{
-					Name:  "reflection, ref",
-					Usage: "flag for enabling server reflection",
-				},
-			},
+			Flags:  serverFlags(),
 		},
 	}
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatalf("error in running command %s", err)
+	}
+}
+
+func serverFlags() []cli.Flag {
+	return []cli.Flag{
+		cli.StringFlag{
+			Name:   "arangodb-pass, pass",
+			EnvVar: "ARANGODB_PASS",
+			Usage:  "arangodb database password",
+		},
+		cli.StringFlag{
+			Name:   "arangodb-database, db",
+			EnvVar: "ARANGODB_DATABASE",
+			Usage:  "arangodb database name",
+		},
+		cli.StringFlag{
+			Name:   "arangodb-user, user",
+			EnvVar: "ARANGODB_USER",
+			Usage:  "arangodb database user",
+		},
+		cli.StringFlag{
+			Name:   "arangodb-host, host",
+			Value:  "arangodb",
+			EnvVar: "ARANGODB_SERVICE_HOST",
+			Usage:  "arangodb database host",
+		},
+		cli.StringFlag{
+			Name:   "arangodb-port",
+			EnvVar: "ARANGODB_SERVICE_PORT",
+			Usage:  "arangodb database port",
+			Value:  "8529",
+		},
+		cli.BoolTFlag{
+			Name:  "is-secure",
+			Usage: "flag for secured or unsecured arangodb endpoint",
+		},
+		cli.StringFlag{
+			Name:   "nats-host",
+			EnvVar: "NATS_SERVICE_HOST",
+			Usage:  "nats messaging server host",
+		},
+		cli.StringFlag{
+			Name:   "nats-port",
+			EnvVar: "NATS_SERVICE_PORT",
+			Usage:  "nats messaging server port",
+		},
+		cli.StringFlag{
+			Name:  "port",
+			Usage: "tcp port at which the server will be available",
+			Value: "9599",
+		},
+		cli.StringFlag{
+			Name:  "order-collection",
+			Usage: "arangodb collection for storing stock orders",
+			Value: "stock_order",
+		},
+		cli.BoolTFlag{
+			Name:  "reflection, ref",
+			Usage: "flag for enabling server reflection",
+		},
+	}
 }
