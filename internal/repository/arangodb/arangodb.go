@@ -19,166 +19,195 @@ type arangorepository struct {
 	sorder   driver.Collection
 }
 
-// NewOrderRepo acts as constructor for database
-func NewOrderRepo(connP *manager.ConnectParams, coll string) (repository.OrderRepository, error) {
-	ar := &arangorepository{}
-	sess, db, err := manager.NewSessionDb(connP)
+// NewOrderRepo acts as constructor for database.
+func NewOrderRepo(
+	connP *manager.ConnectParams,
+	coll string,
+) (repository.OrderRepository, error) {
+	arp := &arangorepository{}
+	sess, dbs, err := manager.NewSessionDb(connP)
 	if err != nil {
-		return ar, err
+		return arp, fmt.Errorf("error in getting new session %s", err)
 	}
-	ar.sess = sess
-	ar.database = db
-	sorderc, err := db.FindOrCreateCollection(coll, &driver.CreateCollectionOptions{})
+	arp.sess = sess
+	arp.database = dbs
+	sorderc, err := dbs.FindOrCreateCollection(
+		coll,
+		&driver.CreateCollectionOptions{},
+	)
 	if err != nil {
-		return ar, err
+		return arp, fmt.Errorf(
+			"error in finding or creating collection %s",
+			err,
+		)
 	}
-	ar.sorder = sorderc
-	return ar, nil
+	arp.sorder = sorderc
+
+	return arp, nil
 }
 
-// GetOrder retrieves stock order from database
+// GetOrder retrieves stock order from database.
 func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
-	m := &model.OrderDoc{}
+	mdl := &model.OrderDoc{}
 	bindVars := map[string]interface{}{
 		"@stock_order_collection": ar.sorder.Name(),
 		"key":                     id,
 	}
-	r, err := ar.database.GetRow(orderGet, bindVars)
+	dbr, err := ar.database.GetRow(orderGet, bindVars)
 	if err != nil {
-		return m, err
+		return mdl, fmt.Errorf("error in getting database row %s", err)
 	}
-	if r.IsEmpty() {
-		m.NotFound = true
-		return m, nil
+	if dbr.IsEmpty() {
+		mdl.NotFound = true
+
+		return mdl, nil
 	}
-	if err := r.Read(m); err != nil {
-		return m, err
+	if err := dbr.Read(mdl); err != nil {
+		return mdl, fmt.Errorf("error in reading struct %s", err)
 	}
-	return m, nil
+
+	return mdl, nil
 }
 
-// AddOrder creates a new stock order
-func (ar *arangorepository) AddOrder(no *order.NewOrder) (*model.OrderDoc, error) {
-	m := &model.OrderDoc{}
+// AddOrder creates a new stock order.
+func (ar *arangorepository) AddOrder(
+	no *order.NewOrder,
+) (*model.OrderDoc, error) {
+	mdl := &model.OrderDoc{}
 	var bindVars map[string]interface{}
 	attr := no.Data.Attributes
 	bindVars = addableOrderBindParams(attr)
 	bindVars["@stock_order_collection"] = ar.sorder.Name()
 	r, err := ar.database.DoRun(orderIns, bindVars)
 	if err != nil {
-		return m, err
+		return mdl, fmt.Errorf("error in running database command %s", err)
 	}
-	if err := r.Read(m); err != nil {
-		return m, err
+	if err := r.Read(mdl); err != nil {
+		return mdl, fmt.Errorf("error in reading struct %s", err)
 	}
-	return m, nil
+
+	return mdl, nil
 }
 
-// EditOrder updates an existing order
-func (ar *arangorepository) EditOrder(uo *order.OrderUpdate) (*model.OrderDoc, error) {
-	m := &model.OrderDoc{}
-	attr := uo.Data.Attributes
+// EditOrder updates an existing order.
+func (ar *arangorepository) EditOrder(
+	uod *order.OrderUpdate,
+) (*model.OrderDoc, error) {
+	mdl := &model.OrderDoc{}
+	attr := uod.Data.Attributes
 	// check if order exists
-	em, err := ar.GetOrder(uo.Data.Id)
+	em, err := ar.GetOrder(uod.Data.Id)
 	if err != nil {
-		return m, err
+		return mdl, err
 	}
 	if em.NotFound {
-		m.NotFound = true
-		return m, nil
+		mdl.NotFound = true
+
+		return mdl, nil
 	}
 	bindVars := getUpdatableBindParams(attr)
-	var bindParams []string
+	bindParams := make([]string, 0)
 	for k := range bindVars {
 		bindParams = append(bindParams, fmt.Sprintf("%s: @%s", k, k))
 	}
 	orderUpdQ := fmt.Sprintf(orderUpd, strings.Join(bindParams, ","))
 	bindVars["@stock_order_collection"] = ar.sorder.Name()
-	bindVars["key"] = uo.Data.Id
+	bindVars["key"] = uod.Data.Id
 
 	rupd, err := ar.database.DoRun(orderUpdQ, bindVars)
 	if err != nil {
-		return m, err
+		return mdl, fmt.Errorf("error in running statement in database %s", err)
 	}
-	if err := rupd.Read(m); err != nil {
-		return m, err
+	if err := rupd.Read(mdl); err != nil {
+		return mdl, fmt.Errorf(
+			"error in binding struct from database query %s",
+			err,
+		)
 	}
-	return m, nil
+
+	return mdl, nil
 }
 
-// ListOrders provides a list of all orders
-func (ar *arangorepository) ListOrders(p *order.ListParameters) ([]*model.OrderDoc, error) {
-	var om []*model.OrderDoc
+// ListOrders provides a list of all orders.
+func (ar *arangorepository) ListOrders(
+	pls *order.ListParameters,
+) ([]*model.OrderDoc, error) {
+	var odr []*model.OrderDoc
 	var stmt string
-	c := p.Cursor
-	l := p.Limit
-	f := p.Filter
-	if len(f) > 0 {
-		if c == 0 { // no cursor so return first set of result
+	cur := pls.Cursor
+	lmt := pls.Limit
+	flt := pls.Filter
+	if len(flt) > 0 {
+		if cur == 0 { // no cursor so return first set of result
 			stmt = fmt.Sprintf(
 				orderListWithFilter,
 				ar.sorder.Name(),
-				f,
-				l+1,
+				flt,
+				lmt+1,
 			)
 		} else { // else include both filter and cursor
 			stmt = fmt.Sprintf(
 				orderListFilterWithCursor,
 				ar.sorder.Name(),
-				c,
-				f,
-				l+1,
+				cur,
+				flt,
+				lmt+1,
 			)
 		}
 	} else {
-		if c == 0 {
+		if cur == 0 {
 			stmt = fmt.Sprintf(
 				orderList,
 				ar.sorder.Name(),
-				l+1,
+				lmt+1,
 			)
 		} else {
 			stmt = fmt.Sprintf(
 				orderListWithCursor,
 				ar.sorder.Name(),
-				c,
-				l+1,
+				cur,
+				lmt+1,
 			)
 		}
 	}
-	rs, err := ar.database.Search(stmt)
+	rsd, err := ar.database.Search(stmt)
 	if err != nil {
-		return om, err
+		return odr, fmt.Errorf("error in database searching %s", err)
 	}
-	if rs.IsEmpty() {
-		return om, nil
+	if rsd.IsEmpty() {
+		return odr, nil
 	}
-	for rs.Scan() {
+	for rsd.Scan() {
 		m := &model.OrderDoc{}
-		if err := rs.Read(m); err != nil {
-			return om, err
+		if err := rsd.Read(m); err != nil {
+			return odr, fmt.Errorf("error in binding struct %s", err)
 		}
-		om = append(om, m)
+		odr = append(odr, m)
 	}
-	return om, nil
+
+	return odr, nil
 }
 
-func (ar *arangorepository) LoadOrder(eo *order.ExistingOrder) (*model.OrderDoc, error) {
-	m := &model.OrderDoc{}
-	var bindVars map[string]interface{}
-	bindVars = existingOrderBindParams(eo.Data.Attributes)
+func (ar *arangorepository) LoadOrder(
+	eo *order.ExistingOrder,
+) (*model.OrderDoc, error) {
+	mrd := &model.OrderDoc{}
+	bindVars := existingOrderBindParams(eo.Data.Attributes)
 	bindVars["@stock_order_collection"] = ar.sorder.Name()
 	r, err := ar.database.DoRun(orderLoad, bindVars)
 	if err != nil {
-		return m, err
+		return mrd, fmt.Errorf("error in running database query %s", err)
 	}
-	if err := r.Read(m); err != nil {
-		return m, err
+	if err := r.Read(mrd); err != nil {
+		return mrd, fmt.Errorf("error in binding to struct %s", err)
 	}
-	return m, nil
+
+	return mrd, nil
 }
 
-func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interface{} {
+func getUpdatableBindParams(
+	attr *order.OrderUpdateAttributes,
+) map[string]interface{} {
 	bindVars := make(map[string]interface{})
 	if len(attr.Courier) > 0 {
 		bindVars["courier"] = attr.Courier
@@ -199,18 +228,22 @@ func getUpdatableBindParams(attr *order.OrderUpdateAttributes) map[string]interf
 	if len(attr.Items) > 0 {
 		bindVars["items"] = attr.Items
 	}
+
 	return bindVars
 }
 
-// ClearOrders clears all orders from the repository datasource
+// ClearOrders clears all orders from the repository datasource.
 func (ar *arangorepository) ClearOrders() error {
 	if err := ar.sorder.Truncate(context.Background()); err != nil {
-		return err
+		return fmt.Errorf("error in truncating %s", err)
 	}
+
 	return nil
 }
 
-func addableOrderBindParams(attr *order.NewOrderAttributes) map[string]interface{} {
+func addableOrderBindParams(
+	attr *order.NewOrderAttributes,
+) map[string]interface{} {
 	return map[string]interface{}{
 		"courier":            attr.Courier,
 		"courier_account":    attr.CourierAccount,
@@ -225,7 +258,9 @@ func addableOrderBindParams(attr *order.NewOrderAttributes) map[string]interface
 	}
 }
 
-func existingOrderBindParams(attr *order.ExistingOrderAttributes) map[string]interface{} {
+func existingOrderBindParams(
+	attr *order.ExistingOrderAttributes,
+) map[string]interface{} {
 	return map[string]interface{}{
 		"created_at": ptypes.TimestampString(attr.CreatedAt),
 		"updated_at": ptypes.TimestampString(attr.CreatedAt),
@@ -238,5 +273,6 @@ func normalizeStrBindParam(str string) string {
 	if len(str) > 0 {
 		return str
 	}
+
 	return ""
 }
