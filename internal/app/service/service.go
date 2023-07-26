@@ -165,31 +165,74 @@ func (s *OrderService) UpdateOrder(
 	return ord, nil
 }
 
-func (s *OrderService) ListOrders(
+func (s *OrderService) orderQueryWithFilter(
 	ctx context.Context,
-	r *order.ListParameters,
+	params *order.ListParameters,
 ) (*order.OrderCollection, error) {
 	oc := &order.OrderCollection{}
-	var l int64
-	c := r.Cursor
-	f := r.Filter
-	if r.Limit == 0 {
-		l = 10
-	} else {
-		l = r.Limit
+	p, err := query.ParseFilterString(params.Filter)
+	if err != nil {
+		return oc, fmt.Errorf("error parsing filter string: %s", err)
 	}
-	if len(f) > 0 {
-		p, err := query.ParseFilterString(f)
-		if err != nil {
-			return oc, fmt.Errorf("error parsing filter string: %s", err)
-		}
-		str, err := query.GenAQLFilterStatement(
-			&query.StatementParameters{
-				Fmap:    arangodb.FMap,
-				Filters: p,
-				Doc:     "s",
+	str, err := query.GenAQLFilterStatement(&query.StatementParameters{
+		Fmap:    arangodb.FMap,
+		Filters: p,
+		Doc:     "s",
+	})
+	if err != nil {
+		return oc, fmt.Errorf("error generating AQL filter statement: %s", err)
+	}
+	// if the parsed statement is empty FILTER, just return empty string
+	if str == "FILTER " {
+		str = ""
+	}
+	mc, err := s.repo.ListOrders(&order.ListParameters{
+		Cursor: params.Cursor,
+		Limit:  params.Limit,
+		Filter: str,
+	})
+	if err != nil {
+		return oc, aphgrpc.HandleGetError(ctx, err)
+	}
+	if len(mc) == 0 {
+		return oc, aphgrpc.HandleNotFoundError(ctx, err)
+	}
+	var ocdata []*order.OrderCollection_Data
+	for _, m := range mc {
+		ocdata = append(ocdata, &order.OrderCollection_Data{
+			Type: s.GetResourceName(),
+			Id:   m.Key,
+			Attributes: &order.OrderAttributes{
+				CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
+				UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
+				Courier:          m.Courier,
+				CourierAccount:   m.CourierAccount,
+				Comments:         m.Comments,
+				Payment:          m.Payment,
+				PurchaseOrderNum: m.PurchaseOrderNum,
+				Status:           statusToEnum(m.Status),
+				Consumer:         m.Consumer,
+				Payer:            m.Payer,
+				Purchaser:        m.Purchaser,
+				Items:            m.Items,
 			},
-		)
+		})
+	}
+	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
+		oc.Data = ocdata
+		oc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
+
+		return oc, nil
+	}
+	oc.Data = ocdata[:len(ocdata)-1]
+	oc.Meta = &order.Meta{
+		Limit:      params.Limit,
+		NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
+		Total:      int64(len(ocdata)),
+	}
+
+	return oc, nil
+}
 		if err != nil {
 			return oc, fmt.Errorf(
 				"error generating AQL filter statement: %s",
