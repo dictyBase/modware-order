@@ -457,6 +457,7 @@ func stringWithCharset(length int, charset string) string {
 			charset[seedRand.Intn(len(charset))],
 		)
 	}
+
 	return string(byt)
 }
 
@@ -470,6 +471,7 @@ func convertFilterToQuery(fstr string) string {
 	pft, err := query.ParseFilterString(fstr)
 	if err != nil {
 		log.Printf("error parsing filter string %s", err)
+
 		return fstr
 	}
 	str, err := query.GenAQLFilterStatement(
@@ -477,7 +479,9 @@ func convertFilterToQuery(fstr string) string {
 	)
 	if err != nil {
 		log.Printf("error generating AQL filter statement %s", err)
+
 		return str
 	}
+
 	return str
 }
