@@ -233,153 +233,145 @@ func (s *OrderService) orderQueryWithFilter(
 
 	return oc, nil
 }
-		if err != nil {
-			return oc, fmt.Errorf(
-				"error generating AQL filter statement: %s",
-				err,
-			)
-		}
-		// if the parsed statement is empty FILTER, just return empty string
-		if str == "FILTER " {
-			str = ""
-		}
-		mc, err := s.repo.ListOrders(
-			&order.ListParameters{Cursor: c, Limit: l, Filter: str},
-		)
-		if err != nil {
-			return oc, aphgrpc.HandleGetError(ctx, err)
-		}
-		if len(mc) == 0 {
-			return oc, aphgrpc.HandleNotFoundError(ctx, err)
-		}
-		var ocdata []*order.OrderCollection_Data
-		for _, m := range mc {
-			ocdata = append(ocdata, &order.OrderCollection_Data{
-				Type: s.GetResourceName(),
-				Id:   m.Key,
-				Attributes: &order.OrderAttributes{
-					CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-					UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-					Courier:          m.Courier,
-					CourierAccount:   m.CourierAccount,
-					Comments:         m.Comments,
-					Payment:          m.Payment,
-					PurchaseOrderNum: m.PurchaseOrderNum,
-					Status:           statusToEnum(m.Status),
-					Consumer:         m.Consumer,
-					Payer:            m.Payer,
-					Purchaser:        m.Purchaser,
-					Items:            m.Items,
-				},
-			})
-		}
-		if len(ocdata) < int(l)-2 { // fewer results than limit
-			oc.Data = ocdata
-			oc.Meta = &order.Meta{Limit: l, Total: int64(len(ocdata))}
-			return oc, nil
-		}
-		oc.Data = ocdata[:len(ocdata)-1]
-		oc.Meta = &order.Meta{
-			Limit:      l,
-			NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
-			Total:      int64(len(ocdata)),
-		}
-	} else {
-		mc, err := s.repo.ListOrders(&order.ListParameters{Cursor: c, Limit: l})
-		if err != nil {
-			return oc, aphgrpc.HandleGetError(ctx, err)
-		}
-		if len(mc) == 0 {
-			return oc, aphgrpc.HandleNotFoundError(ctx, err)
-		}
-		var ocdata []*order.OrderCollection_Data
-		for _, m := range mc {
-			ocdata = append(ocdata, &order.OrderCollection_Data{
-				Type: s.GetResourceName(),
-				Id:   m.Key,
-				Attributes: &order.OrderAttributes{
-					CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-					UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-					Courier:          m.Courier,
-					CourierAccount:   m.CourierAccount,
-					Comments:         m.Comments,
-					Payment:          m.Payment,
-					PurchaseOrderNum: m.PurchaseOrderNum,
-					Status:           statusToEnum(m.Status),
-					Consumer:         m.Consumer,
-					Payer:            m.Payer,
-					Purchaser:        m.Purchaser,
-					Items:            m.Items,
-				},
-			})
-		}
-		if len(ocdata) < int(l)-2 { // fewer results than limit
-			oc.Data = ocdata
-			oc.Meta = &order.Meta{Limit: l, Total: int64(len(ocdata))}
-			return oc, nil
-		}
-		oc.Data = ocdata[:len(ocdata)-1]
-		oc.Meta = &order.Meta{
-			Limit:      l,
-			NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
-			Total:      int64(len(ocdata)),
-		}
+
+func (s *OrderService) orderQueryWithoutFilter(
+	ctx context.Context,
+	params *order.ListParameters,
+) (*order.OrderCollection, error) {
+	oc := &order.OrderCollection{}
+	mc, err := s.repo.ListOrders(&order.ListParameters{
+		Cursor: params.Cursor,
+		Limit:  params.Limit,
+	})
+	if err != nil {
+		return oc, aphgrpc.HandleGetError(ctx, err)
 	}
+	if len(mc) == 0 {
+		return oc, aphgrpc.HandleNotFoundError(ctx, err)
+	}
+	var ocdata []*order.OrderCollection_Data
+	for _, m := range mc {
+		ocdata = append(ocdata, &order.OrderCollection_Data{
+			Type: s.GetResourceName(),
+			Id:   m.Key,
+			Attributes: &order.OrderAttributes{
+				CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
+				UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
+				Courier:          m.Courier,
+				CourierAccount:   m.CourierAccount,
+				Comments:         m.Comments,
+				Payment:          m.Payment,
+				PurchaseOrderNum: m.PurchaseOrderNum,
+				Status:           statusToEnum(m.Status),
+				Consumer:         m.Consumer,
+				Payer:            m.Payer,
+				Purchaser:        m.Purchaser,
+				Items:            m.Items,
+			},
+		})
+	}
+	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
+		oc.Data = ocdata
+		oc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
+
+		return oc, nil
+	}
+	oc.Data = ocdata[:len(ocdata)-1]
+	oc.Meta = &order.Meta{
+		Limit:      params.Limit,
+		NextCursor: genNextCursorVal(mc[len(mc)-1].CreatedAt),
+		Total:      int64(len(ocdata)),
+	}
+
 	return oc, nil
 }
 
-// LoadOrder handles the loading of an existing order
+// ListOrders lists all existing orders.
+func (s *OrderService) ListOrders(
+	ctx context.Context,
+	params *order.ListParameters,
+) (*order.OrderCollection, error) {
+	orc := &order.OrderCollection{}
+	lmt := params.Limit
+	if params.Limit == 0 {
+		lmt = 10
+	}
+	if len(params.Filter) > 0 {
+		orc, err := s.orderQueryWithFilter(ctx, &order.ListParameters{
+			Limit:  lmt,
+			Cursor: params.Cursor,
+			Filter: params.Filter,
+		})
+		if err != nil {
+			return orc, err
+		}
+	} else {
+		orc, err := s.orderQueryWithoutFilter(ctx, &order.ListParameters{
+			Limit:  lmt,
+			Cursor: params.Cursor,
+		})
+		if err != nil {
+			return orc, err
+		}
+	}
+
+	return orc, nil
+}
+
+// LoadOrder handles the loading of an existing order.
 func (s *OrderService) LoadOrder(
 	ctx context.Context,
-	r *order.ExistingOrder,
+	rxo *order.ExistingOrder,
 ) (*order.Order, error) {
 	ord := &order.Order{}
-	if err := r.Validate(); err != nil {
+	if err := rxo.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.LoadOrder(r)
+	mlrd, err := s.repo.LoadOrder(rxo)
 	if err != nil {
 		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
-	if m.NotFound {
+	if mlrd.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
-		Id:   m.Key,
+		Id:   mlrd.Key,
 		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-			Courier:          m.Courier,
-			CourierAccount:   m.CourierAccount,
-			Comments:         m.Comments,
-			Payment:          m.Payment,
-			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           statusToEnum(m.Status),
-			Consumer:         m.Consumer,
-			Payer:            m.Payer,
-			Purchaser:        m.Purchaser,
-			Items:            m.Items,
+			CreatedAt:        aphgrpc.TimestampProto(mlrd.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(mlrd.UpdatedAt),
+			Courier:          mlrd.Courier,
+			CourierAccount:   mlrd.CourierAccount,
+			Comments:         mlrd.Comments,
+			Payment:          mlrd.Payment,
+			PurchaseOrderNum: mlrd.PurchaseOrderNum,
+			Status:           statusToEnum(mlrd.Status),
+			Consumer:         mlrd.Consumer,
+			Payer:            mlrd.Payer,
+			Purchaser:        mlrd.Purchaser,
+			Items:            mlrd.Items,
 		},
 	}
-	s.publisher.Publish(s.Topics["orderCreate"], ord)
+	s.publisher.Publish(s.Topics["orderCreate"], ord) //nolint:errcheck
+
 	return ord, nil
 }
 
-// PrepareForOrder clears the database to prepare for loading data
+// PrepareForOrder clears the database to prepare for loading data.
 func (s *OrderService) PrepareForOrder(
 	ctx context.Context,
-	r *empty.Empty,
+	rmt *empty.Empty,
 ) (*empty.Empty, error) {
 	e := &empty.Empty{}
 	if err := s.repo.ClearOrders(); err != nil {
 		return e, aphgrpc.HandleGenericError(ctx, err)
 	}
+
 	return e, nil
 }
 
 // genNextCursorVal converts to epoch(https://en.wikipedia.org/wiki/Unix_time)
-// in milliseconds
+// in milliseconds.
 func genNextCursorVal(t time.Time) int64 {
 	return t.UnixNano() / Divider
 }
@@ -395,5 +387,6 @@ func statusToEnum(status string) order.OrderStatus {
 	default:
 		break
 	}
+
 	return order.OrderStatus_IN_PREPARATION
 }
