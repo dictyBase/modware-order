@@ -370,37 +370,43 @@ func TestListOrders(t *testing.T) {
 }
 
 func TestLoadOrder(t *testing.T) {
+	t.Parallel()
+	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
-	defer repo.ClearOrders()
-	tm, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
-	eo := &order.ExistingOrder{
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	defer repo.ClearOrders() //nolint
+	tme, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
+	eod := &order.ExistingOrder{
 		Data: &order.ExistingOrder_Data{
 			Type: "order",
 			Attributes: &order.ExistingOrderAttributes{
-				CreatedAt: aphgrpc.TimestampProto(tm),
-				UpdatedAt: aphgrpc.TimestampProto(tm),
+				CreatedAt: aphgrpc.TimestampProto(tme),
+				UpdatedAt: aphgrpc.TimestampProto(tme),
 				Purchaser: "super@c.org",
 				Items:     []string{"DBS2109858", "DBP8349822"},
 			},
 		},
 	}
-	m, err := repo.LoadOrder(eo)
-	if err != nil {
-		t.Fatalf("error in loading order %s", err)
-	}
-	assert := assert.New(t)
-	assert.True(m.CreatedAt.Equal(tm), "should match created_at")
-	assert.True(m.UpdatedAt.Equal(tm), "should match updated_at")
-	assert.Equal(m.Purchaser, eo.Data.Attributes.Purchaser, "should match the purchaser")
-	assert.ElementsMatch(m.Items, eo.Data.Attributes.Items, "should match the items")
-	assert.NotEmpty(m.Key, "should not have empty key/id")
+	mrd, err := repo.LoadOrder(eod)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.True(mrd.CreatedAt.Equal(tme), "should match created_at")
+	assert.True(mrd.UpdatedAt.Equal(tme), "should match updated_at")
+	assert.Equal(
+		mrd.Purchaser,
+		eod.Data.Attributes.Purchaser,
+		"should match the purchaser",
+	)
+	assert.ElementsMatch(
+		mrd.Items,
+		eod.Data.Attributes.Items,
+		"should match the items",
+	)
+	assert.NotEmpty(mrd.Key, "should not have empty key/id")
 }
 
 func TestClearOrders(t *testing.T) {
+	t.Parallel()
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
 	if err != nil {
