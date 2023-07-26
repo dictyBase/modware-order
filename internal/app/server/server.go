@@ -24,6 +24,8 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+const ExitNo = 2
+
 // RunServer starts and runs the server.
 func RunServer(clt *cli.Context) error {
 	arPort, _ := strconv.Atoi(clt.String("arangodb-port"))
@@ -39,20 +41,19 @@ func RunServer(clt *cli.Context) error {
 	if err != nil {
 		return cli.NewExitError(
 			fmt.Sprintf("cannot connect to arangodb order repository %s",
-				err.Error(),
-			), 2)
+				err.Error()), ExitNo)
 	}
 	msn, err := nats.NewPublisher(
 		clt.String("nats-host"),
 		clt.String("nats-port"),
 		gnats.MaxReconnects(-1),
-		gnats.ReconnectWait(2*time.Second),
+		gnats.ReconnectWait(ExitNo*time.Second),
 	)
 	if err != nil {
 		return cli.NewExitError(
 			fmt.Sprintf("cannot connect to messaging server %s",
 				err.Error(),
-			), 2)
+			), ExitNo)
 	}
 	grpcS := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
@@ -76,7 +77,7 @@ func RunServer(clt *cli.Context) error {
 	endP := fmt.Sprintf(":%s", clt.String("port"))
 	lis, err := net.Listen("tcp", endP)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("failed to listen %s", err), 2)
+		return cli.NewExitError(fmt.Sprintf("failed to listen %s", err), ExitNo)
 	}
 	log.Printf("starting grpc server on %s", endP)
 	if err := grpcS.Serve(lis); err != nil {
