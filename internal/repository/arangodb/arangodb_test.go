@@ -68,27 +68,24 @@ func TestMain(m *testing.M) {
 	}
 	_, err = dbh.CreateCollection(collection, &driver.CreateCollectionOptions{})
 	if err != nil {
-		dbh.Drop()
+		dbh.Drop() //nolint
 		log.Fatalf("unable to create collection %s %s", collection, err)
 	}
 	code := m.Run()
-	dbh.Drop()
 	os.Exit(code)
 }
 
 func TestAddOrder(t *testing.T) {
+	t.Parallel()
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
-	defer repo.ClearOrders()
 	no := newTestOrder("art@vandelayindustries.com")
-	m, err := repo.AddOrder(no)
 	if err != nil {
 		t.Fatalf("error in adding order %s", err)
 	}
-	assert := assert.New(t)
 	assert.Equal(m.Courier, no.Data.Attributes.Courier, "should match the courier")
 	assert.Equal(m.CourierAccount, no.Data.Attributes.CourierAccount, "should match the courier account")
 	assert.Equal(m.Comments, no.Data.Attributes.Comments, "should match the comments")
@@ -405,7 +402,6 @@ func convertFilterToQuery(s string) string {
 	p, err := query.ParseFilterString(s)
 	if err != nil {
 		log.Printf("error parsing filter string %s", err)
-		return s
 	}
 	str, err := query.GenAQLFilterStatement(&query.StatementParameters{Fmap: FMap, Filters: p, Doc: "s"})
 	if err != nil {
