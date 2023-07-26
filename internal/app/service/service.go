@@ -58,29 +58,29 @@ func (s *OrderService) GetOrder(
 	if err := rdr.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.GetOrder(rdr.Id)
+	mord, err := s.repo.GetOrder(rdr.Id)
 	if err != nil {
 		return ord, aphgrpc.HandleGetError(ctx, err)
 	}
-	if m.NotFound {
+	if mord.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
-		Id:   m.Key,
+		Id:   mord.Key,
 		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-			Courier:          m.Courier,
-			CourierAccount:   m.CourierAccount,
-			Comments:         m.Comments,
-			Payment:          m.Payment,
-			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           statusToEnum(m.Status),
-			Consumer:         m.Consumer,
-			Payer:            m.Payer,
-			Purchaser:        m.Purchaser,
-			Items:            m.Items,
+			CreatedAt:        aphgrpc.TimestampProto(mord.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(mord.UpdatedAt),
+			Courier:          mord.Courier,
+			CourierAccount:   mord.CourierAccount,
+			Comments:         mord.Comments,
+			Payment:          mord.Payment,
+			PurchaseOrderNum: mord.PurchaseOrderNum,
+			Status:           statusToEnum(mord.Status),
+			Consumer:         mord.Consumer,
+			Payer:            mord.Payer,
+			Purchaser:        mord.Purchaser,
+			Items:            mord.Items,
 		},
 	}
 
@@ -96,74 +96,75 @@ func (s *OrderService) CreateOrder(
 	if err := rdr.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.AddOrder(rdr)
+	adr, err := s.repo.AddOrder(rdr)
 	if err != nil {
 		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
-	if m.NotFound {
+	if adr.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
-		Id:   m.Key,
+		Id:   adr.Key,
 		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-			Courier:          m.Courier,
-			CourierAccount:   m.CourierAccount,
-			Comments:         m.Comments,
-			Payment:          m.Payment,
-			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           statusToEnum(m.Status),
-			Consumer:         m.Consumer,
-			Payer:            m.Payer,
-			Purchaser:        m.Purchaser,
-			Items:            m.Items,
+			CreatedAt:        aphgrpc.TimestampProto(adr.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(adr.UpdatedAt),
+			Courier:          adr.Courier,
+			CourierAccount:   adr.CourierAccount,
+			Comments:         adr.Comments,
+			Payment:          adr.Payment,
+			PurchaseOrderNum: adr.PurchaseOrderNum,
+			Status:           statusToEnum(adr.Status),
+			Consumer:         adr.Consumer,
+			Payer:            adr.Payer,
+			Purchaser:        adr.Purchaser,
+			Items:            adr.Items,
 		},
 	}
 	s.publisher.Publish(s.Topics["orderCreate"], ord)
+
 	return ord, nil
 }
 
-// UpdateOrder handles updating an existing order
+// UpdateOrder handles updating an existing order.
 func (s *OrderService) UpdateOrder(
 	ctx context.Context,
-	r *order.OrderUpdate,
+	urd *order.OrderUpdate,
 ) (*order.Order, error) {
 	ord := &order.Order{}
-	if err := r.Validate(); err != nil {
+	if err := urd.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.EditOrder(r)
+	mord, err := s.repo.EditOrder(urd)
 	if err != nil {
 		return ord, aphgrpc.HandleUpdateError(ctx, err)
 	}
-	if m.NotFound {
+	if mord.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
-		Id:   m.Key,
+		Id:   mord.Key,
 		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(m.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(m.UpdatedAt),
-			Courier:          m.Courier,
-			CourierAccount:   m.CourierAccount,
-			Comments:         m.Comments,
-			Payment:          m.Payment,
-			PurchaseOrderNum: m.PurchaseOrderNum,
-			Status:           statusToEnum(m.Status),
-			Consumer:         m.Consumer,
-			Payer:            m.Payer,
-			Purchaser:        m.Purchaser,
-			Items:            m.Items,
+			CreatedAt:        aphgrpc.TimestampProto(mord.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(mord.UpdatedAt),
+			Courier:          mord.Courier,
+			CourierAccount:   mord.CourierAccount,
+			Comments:         mord.Comments,
+			Payment:          mord.Payment,
+			PurchaseOrderNum: mord.PurchaseOrderNum,
+			Status:           statusToEnum(mord.Status),
+			Consumer:         mord.Consumer,
+			Payer:            mord.Payer,
+			Purchaser:        mord.Purchaser,
+			Items:            mord.Items,
 		},
 	}
-	s.publisher.Publish(s.Topics["orderUpdate"], ord)
+	s.publisher.Publish(s.Topics["orderUpdate"], ord) //nolint
+
 	return ord, nil
 }
 
-// ListOrders lists all existing orders
 func (s *OrderService) ListOrders(
 	ctx context.Context,
 	r *order.ListParameters,
