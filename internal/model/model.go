@@ -6,7 +6,7 @@ import (
 	driver "github.com/arangodb/go-driver"
 )
 
-// OrderDoc is the data structure for stock orders
+// OrderDoc is the data structure for stock orders.
 type OrderDoc struct {
 	driver.DocumentMeta
 	CreatedAt        time.Time `json:"created_at"`

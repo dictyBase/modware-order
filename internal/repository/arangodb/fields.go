@@ -1,6 +1,6 @@
 package arangodb
 
-// FMap maps filters to database fields
+// FMap maps filters to database fields.
 var FMap = map[string]string{
 	"created_at": "created_at",
 	"item":       "items",
