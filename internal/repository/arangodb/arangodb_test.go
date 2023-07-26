@@ -287,87 +287,86 @@ func TestEditOrder(t *testing.T) {
 }
 
 func TestListOrders(t *testing.T) {
+	t.Parallel()
+	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
-	defer repo.ClearOrders()
-	// add 15 new test orders
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	defer repo.ClearOrders() //nolint
 	for i := 1; i <= 15; i++ {
-		no := newTestOrder(fmt.Sprintf("%s@kramericaindustries.com", RandString(10)))
+		no := newTestOrder(
+			fmt.Sprintf("%s@kramericaindustries.com", RandString(10)),
+		)
 		_, err := repo.AddOrder(no)
-		if err != nil {
-			t.Fatalf("error in adding order %s", err)
-		}
+		assert.NoErrorf(err, "expect no error, received %s", err)
 	}
-	// get first five results
-	lo, err := repo.ListOrders(&order.ListParameters{Limit: 4})
-	if err != nil {
-		t.Fatalf("error in getting first five orders %s", err)
-	}
-	assert := assert.New(t)
-	assert.Len(lo, 5, "should match the provided limit number + 1")
-
-	for _, order := range lo {
+	lrd, err := repo.ListOrders(&order.ListParameters{Limit: 4})
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Len(lrd, 5, "should match the provided limit number + 1")
+	for _, order := range lrd {
 		assert.Equal(order.Courier, "FedEx", "should match the courier")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
-	assert.NotEqual(lo[0].Consumer, lo[1].Consumer, "should have different consumers")
-	// convert fifth result to numeric timestamp in milliseconds
-	// so we can use this as cursor
-	ti := toTimestamp(lo[len(lo)-1].CreatedAt)
-
-	// get next five results (5-9)
+	assert.NotEqual(
+		lrd[0].Consumer,
+		lrd[1].Consumer,
+		"should have different consumers",
+	)
+	ti := toTimestamp(lrd[len(lrd)-1].CreatedAt)
 	lo2, err := repo.ListOrders(&order.ListParameters{Cursor: ti, Limit: 4})
-	if err != nil {
-		t.Fatalf("error in getting orders 5-9 %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo2, 5, "should match the provided limit number + 1")
-	assert.Exactly(lo2[0], lo[len(lo)-1], "last item from first five results and first item from next five results should be the same")
-	assert.NotEqual(lo2[0].Consumer, lo2[1].Consumer, "should have different consumers")
-
-	// convert ninth result to numeric timestamp
+	assert.Exactly(
+		lo2[0],
+		lrd[len(lrd)-1],
+		"last item from first five results and first item from next five results should be the same",
+	)
+	assert.NotEqual(
+		lo2[0].Consumer,
+		lo2[1].Consumer,
+		"should have different consumers",
+	)
 	ti2 := toTimestamp(lo2[len(lo2)-1].CreatedAt)
-	// get last five results (9-13)
 	lo3, err := repo.ListOrders(&order.ListParameters{Cursor: ti2, Limit: 4})
-	if err != nil {
-		t.Fatalf("error in getting orders 9-13 %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo3, 5, "should match the provided limit number + 1")
-	assert.Exactly(lo3[0], lo2[len(lo2)-1], "last item from previous five results and first item from next five results should be the same")
-
-	// convert 13th result to numeric timestamp
+	assert.Exactly(
+		lo3[0],
+		lo2[len(lo2)-1],
+		"last item from previous five results and first item from next five results should be the same",
+	)
 	ti3 := toTimestamp(lo3[len(lo3)-1].CreatedAt)
-	// get last results
 	lo4, err := repo.ListOrders(&order.ListParameters{Cursor: ti3, Limit: 4})
-	if err != nil {
-		t.Fatalf("error in getting orders 13-15 %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo4, 3, "should only bring last three results")
-	assert.Exactly(lo3[4], lo4[0], "last item from previous five results and first item from next three results should be the same")
-	testModelListSort(lo, t)
-	testModelListSort(lo2, t)
-	testModelListSort(lo3, t)
-	testModelListSort(lo4, t)
-
-	sf, err := repo.ListOrders(&order.ListParameters{Limit: 100, Filter: convertFilterToQuery("courier===FedEx")})
-	if err != nil {
-		t.Fatalf("error in getting orders with courier filter %s", err)
+	assert.Exactly(
+		lo3[4],
+		lo4[0],
+		"last item from previous five results and first item from next three results should be the same",
+	)
+	for _, mdl := range [][]*model.OrderDoc{lrd, lo2, lo3, lo4} {
+		testModelListSort(assert, mdl)
 	}
-	assert.Len(sf, 15, "should list all 15 orders")
-
-	sc, err := repo.ListOrders(&order.ListParameters{Cursor: toTimestamp(sf[5].CreatedAt), Limit: 100, Filter: convertFilterToQuery("courier===FedEx")})
-	if err != nil {
-		t.Fatalf("error in getting orders with cursor and courier filter %s", err)
-	}
-	assert.Len(sc, 10, "should list last 10 orders")
-
-	sn, err := repo.ListOrders(&order.ListParameters{Cursor: toTimestamp(sf[5].CreatedAt), Limit: 100, Filter: convertFilterToQuery("courier===UPS")})
-	if err != nil {
-		t.Fatalf("error in getting orders with cursor and courier filter %s", err)
-	}
-	assert.Len(sn, 0, "should list last no UPS orders")
+	sfd, err := repo.ListOrders(&order.ListParameters{
+		Limit:  100,
+		Filter: convertFilterToQuery("courier===FedEx"),
+	})
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Len(sfd, 15, "should list all 15 orders")
+	scd, err := repo.ListOrders(&order.ListParameters{
+		Cursor: toTimestamp(sfd[5].CreatedAt),
+		Limit:  100,
+		Filter: convertFilterToQuery("courier===FedEx"),
+	})
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Len(scd, 10, "should list last 10 orders")
+	snd, err := repo.ListOrders(&order.ListParameters{
+		Cursor: toTimestamp(sfd[5].CreatedAt),
+		Limit:  100,
+		Filter: convertFilterToQuery("courier===UPS"),
+	})
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Len(snd, 0, "should list last no UPS orders")
 }
 
 func TestLoadOrder(t *testing.T) {
