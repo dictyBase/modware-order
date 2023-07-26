@@ -136,47 +136,72 @@ func TestAddOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
+	t.Parallel()
 	connP := getConnectParams()
-	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
-	defer repo.ClearOrders()
-	no := newTestOrder("art@vandelayindustries.com")
-	// add new test order
-	m, err := repo.AddOrder(no)
-	if err != nil {
-		t.Fatalf("error in adding order %s", err)
-	}
-	// get test order by the key/ID of added test order
-	g, err := repo.GetOrder(m.Key)
-	if err != nil {
-		t.Fatalf("error in getting order %s with ID %s", m.Key, err)
-	}
 	assert := assert.New(t)
-	assert.Equal(g.Courier, no.Data.Attributes.Courier, "should match the courier")
-	assert.Equal(g.CourierAccount, no.Data.Attributes.CourierAccount, "should match the courier account")
-	assert.Equal(g.Comments, no.Data.Attributes.Comments, "should match the comments")
-	assert.Equal(g.Payment, no.Data.Attributes.Payment, "should match the payment")
-	assert.Equal(g.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	assert.Equal(g.Status, no.Data.Attributes.Status.String(), "should match the status")
-	assert.Equal(g.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
-	assert.Equal(g.Payer, no.Data.Attributes.Payer, "should match the payer")
-	assert.Equal(g.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
-	assert.Equal(g.Items, no.Data.Attributes.Items, "should match the items")
-	assert.Len(g.Items, 2, "should match length of two items")
-	assert.NotEmpty(g.Key, "should not have empty key/id")
-	assert.True(m.CreatedAt.Equal(g.CreatedAt), "should match created time of order")
-	assert.True(m.UpdatedAt.Equal(g.UpdatedAt), "should match updated time of order")
-	ne, err := repo.GetOrder("1")
-	if err != nil {
-		t.Fatalf(
-			"error in fetching order %s with ID %s",
-			"1",
-			err,
-		)
-	}
-	assert.True(ne.NotFound, "entry should not exist")
+	repo, err := NewOrderRepo(connP, collection)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	defer repo.ClearOrders() //nolint
+	nrd := newTestOrder("art@vandelayindustries.com")
+	mrd, err := repo.AddOrder(nrd)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	grd, err := repo.GetOrder(mrd.Key)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Equal(
+		grd.Courier,
+		nrd.Data.Attributes.Courier,
+		"should match the courier",
+	)
+	assert.Equal(
+		grd.CourierAccount,
+		nrd.Data.Attributes.CourierAccount,
+		"should match the courier account",
+	)
+	assert.Equal(
+		grd.Comments,
+		nrd.Data.Attributes.Comments,
+		"should match the comments",
+	)
+	assert.Equal(
+		grd.Payment,
+		nrd.Data.Attributes.Payment,
+		"should match the payment",
+	)
+	assert.Equal(
+		grd.PurchaseOrderNum,
+		nrd.Data.Attributes.PurchaseOrderNum,
+		"should match the purchase order number",
+	)
+	assert.Equal(
+		grd.Status,
+		nrd.Data.Attributes.Status.String(),
+		"should match the status",
+	)
+	assert.Equal(
+		grd.Consumer,
+		nrd.Data.Attributes.Consumer,
+		"should match the consumer",
+	)
+	assert.Equal(grd.Payer, nrd.Data.Attributes.Payer, "should match the payer")
+	assert.Equal(
+		grd.Purchaser,
+		nrd.Data.Attributes.Purchaser,
+		"should match the purchaser",
+	)
+	assert.Equal(grd.Items, nrd.Data.Attributes.Items, "should match the items")
+	assert.Len(grd.Items, 2, "should match length of two items")
+	assert.NotEmpty(grd.Key, "should not have empty key/id")
+	assert.True(
+		mrd.CreatedAt.Equal(grd.CreatedAt),
+		"should match created time of order",
+	)
+	assert.True(
+		mrd.UpdatedAt.Equal(grd.UpdatedAt),
+		"should match updated time of order",
+	)
+	nre, err := repo.GetOrder("1")
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.True(nre.NotFound, "entry should not exist")
 }
 
 func TestEditOrder(t *testing.T) {
