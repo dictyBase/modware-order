@@ -407,43 +407,33 @@ func TestLoadOrder(t *testing.T) {
 
 func TestClearOrders(t *testing.T) {
 	t.Parallel()
+	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	// add 15 new test orders
 	for i := 1; i <= 15; i++ {
-		no := newTestOrder(fmt.Sprintf("%s@kramericaindustries.com", RandString(10)))
+		no := newTestOrder(
+			fmt.Sprintf("%s@kramericaindustries.com", RandString(10)),
+		)
 		_, err := repo.AddOrder(no)
-		if err != nil {
-			t.Fatalf("error in adding order %s", err)
-		}
+		assert.NoErrorf(err, "expect no error, received %s", err)
 	}
 	lo, err := repo.ListOrders(&order.ListParameters{Limit: 100})
-	if err != nil {
-		t.Fatalf("error in listing orders %s", err)
-	}
-	assert := assert.New(t)
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo, 15, "should have 15 orders in database")
-	if err := repo.ClearOrders(); err != nil {
-		t.Fatalf("error clearing database %s", err)
-	}
+	err = repo.ClearOrders()
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	lo2, err := repo.ListOrders(&order.ListParameters{Limit: 100})
-	if err != nil {
-		t.Fatalf("error in listing orders %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo2, 0, "should not list any orders")
 }
 
-func testModelListSort(m []*model.OrderDoc, t *testing.T) {
-	it, err := NewPairWiseIterator(m)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert := assert.New(t)
-	for it.NextPair() {
-		cm, nm := it.Pair()
+func testModelListSort(assert *assert.Assertions, m []*model.OrderDoc) {
+	itr, err := NewPairWiseIterator(m)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	for itr.NextPair() {
+		cm, nm := itr.Pair()
 		assert.Truef(
 			nm.CreatedAt.Before(cm.CreatedAt),
 			"date %s should be before %s",
@@ -460,31 +450,34 @@ const (
 var seedRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func stringWithCharset(length int, charset string) string {
-	var b []byte
+	var byt []byte
 	for i := 0; i < length; i++ {
-		b = append(
-			b,
+		byt = append(
+			byt,
 			charset[seedRand.Intn(len(charset))],
 		)
 	}
-	return string(b)
+	return string(byt)
 }
 
 func RandString(length int) string {
 	return stringWithCharset(length, charSet)
 }
 
-func convertFilterToQuery(s string) string {
+func convertFilterToQuery(fstr string) string {
 	// parse filter logic
 	// this needs to be done here since it is implemented in the service, not repository
-	p, err := query.ParseFilterString(s)
+	pft, err := query.ParseFilterString(fstr)
 	if err != nil {
 		log.Printf("error parsing filter string %s", err)
+		return fstr
 	}
-	str, err := query.GenAQLFilterStatement(&query.StatementParameters{Fmap: FMap, Filters: p, Doc: "s"})
+	str, err := query.GenAQLFilterStatement(
+		&query.StatementParameters{Fmap: FMap, Filters: pft, Doc: "s"},
+	)
 	if err != nil {
 		log.Printf("error generating AQL filter statement %s", err)
-		return s
+		return str
 	}
 	return str
 }
