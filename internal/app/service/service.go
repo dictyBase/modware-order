@@ -9,6 +9,7 @@ import (
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/message"
+	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/dictyBase/modware-order/internal/repository"
 	"github.com/dictyBase/modware-order/internal/repository/arangodb"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -65,24 +66,7 @@ func (s *OrderService) GetOrder(
 	if mord.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ord.Data = &order.Order_Data{
-		Type: s.GetResourceName(),
-		Id:   mord.Key,
-		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(mord.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(mord.UpdatedAt),
-			Courier:          mord.Courier,
-			CourierAccount:   mord.CourierAccount,
-			Comments:         mord.Comments,
-			Payment:          mord.Payment,
-			PurchaseOrderNum: mord.PurchaseOrderNum,
-			Status:           statusToEnum(mord.Status),
-			Consumer:         mord.Consumer,
-			Payer:            mord.Payer,
-			Purchaser:        mord.Purchaser,
-			Items:            mord.Items,
-		},
-	}
+	ord.Data = s.orderData(mord)
 
 	return ord, nil
 }
@@ -103,24 +87,7 @@ func (s *OrderService) CreateOrder(
 	if adr.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ord.Data = &order.Order_Data{
-		Type: s.GetResourceName(),
-		Id:   adr.Key,
-		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(adr.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(adr.UpdatedAt),
-			Courier:          adr.Courier,
-			CourierAccount:   adr.CourierAccount,
-			Comments:         adr.Comments,
-			Payment:          adr.Payment,
-			PurchaseOrderNum: adr.PurchaseOrderNum,
-			Status:           statusToEnum(adr.Status),
-			Consumer:         adr.Consumer,
-			Payer:            adr.Payer,
-			Purchaser:        adr.Purchaser,
-			Items:            adr.Items,
-		},
-	}
+	ord.Data = s.orderData(adr)
 	s.publisher.Publish(s.Topics["orderCreate"], ord) //nolint:errcheck
 
 	return ord, nil
@@ -142,24 +109,7 @@ func (s *OrderService) UpdateOrder(
 	if mord.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ord.Data = &order.Order_Data{
-		Type: s.GetResourceName(),
-		Id:   mord.Key,
-		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(mord.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(mord.UpdatedAt),
-			Courier:          mord.Courier,
-			CourierAccount:   mord.CourierAccount,
-			Comments:         mord.Comments,
-			Payment:          mord.Payment,
-			PurchaseOrderNum: mord.PurchaseOrderNum,
-			Status:           statusToEnum(mord.Status),
-			Consumer:         mord.Consumer,
-			Payer:            mord.Payer,
-			Purchaser:        mord.Purchaser,
-			Items:            mord.Items,
-		},
-	}
+	ord.Data = s.orderData(mord)
 	s.publisher.Publish(s.Topics["orderUpdate"], ord) //nolint
 
 	return ord, nil
@@ -334,24 +284,7 @@ func (s *OrderService) LoadOrder(
 	if mlrd.NotFound {
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ord.Data = &order.Order_Data{
-		Type: s.GetResourceName(),
-		Id:   mlrd.Key,
-		Attributes: &order.OrderAttributes{
-			CreatedAt:        aphgrpc.TimestampProto(mlrd.CreatedAt),
-			UpdatedAt:        aphgrpc.TimestampProto(mlrd.UpdatedAt),
-			Courier:          mlrd.Courier,
-			CourierAccount:   mlrd.CourierAccount,
-			Comments:         mlrd.Comments,
-			Payment:          mlrd.Payment,
-			PurchaseOrderNum: mlrd.PurchaseOrderNum,
-			Status:           statusToEnum(mlrd.Status),
-			Consumer:         mlrd.Consumer,
-			Payer:            mlrd.Payer,
-			Purchaser:        mlrd.Purchaser,
-			Items:            mlrd.Items,
-		},
-	}
+	ord.Data = s.orderData(mlrd)
 	s.publisher.Publish(s.Topics["orderCreate"], ord) //nolint:errcheck
 
 	return ord, nil
@@ -368,6 +301,27 @@ func (s *OrderService) PrepareForOrder(
 	}
 
 	return e, nil
+}
+
+func (s *OrderService) orderData(ord *model.OrderDoc) *order.Order_Data {
+	return &order.Order_Data{
+		Type: s.GetResourceName(),
+		Id:   ord.Key,
+		Attributes: &order.OrderAttributes{
+			CreatedAt:        aphgrpc.TimestampProto(ord.CreatedAt),
+			UpdatedAt:        aphgrpc.TimestampProto(ord.UpdatedAt),
+			Courier:          ord.Courier,
+			CourierAccount:   ord.CourierAccount,
+			Comments:         ord.Comments,
+			Payment:          ord.Payment,
+			PurchaseOrderNum: ord.PurchaseOrderNum,
+			Status:           statusToEnum(ord.Status),
+			Consumer:         ord.Consumer,
+			Payer:            ord.Payer,
+			Purchaser:        ord.Purchaser,
+			Items:            ord.Items,
+		},
+	}
 }
 
 // genNextCursorVal converts to epoch(https://en.wikipedia.org/wiki/Unix_time)
