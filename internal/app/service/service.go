@@ -14,7 +14,9 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 )
 
-// OrderService is the container for managing order service definition
+const Divider = 1000000
+
+// OrderService is the container for managing order service definition.
 type OrderService struct {
 	order.UnimplementedOrderServiceServer
 	*aphgrpc.Service
@@ -26,14 +28,20 @@ func defaultOptions() *aphgrpc.ServiceOptions {
 	return &aphgrpc.ServiceOptions{Resource: "order"}
 }
 
-// NewOrderService is the constructor for creating a new instance of OrderService
-func NewOrderService(repo repository.OrderRepository, pub message.Publisher, opt ...aphgrpc.Option) *OrderService {
+// NewOrderService is the constructor for creating a new instance of
+// OrderService.
+func NewOrderService(
+	repo repository.OrderRepository,
+	pub message.Publisher,
+	opt ...aphgrpc.Option,
+) *OrderService {
 	so := defaultOptions()
 	for _, optfn := range opt {
 		optfn(so)
 	}
 	srv := &aphgrpc.Service{}
 	aphgrpc.AssignFieldsToStructs(so, srv)
+
 	return &OrderService{
 		Service:   srv,
 		repo:      repo,
@@ -41,20 +49,23 @@ func NewOrderService(repo repository.OrderRepository, pub message.Publisher, opt
 	}
 }
 
-// GetOrder handles getting an order by ID
-func (s *OrderService) GetOrder(ctx context.Context, r *order.OrderId) (*order.Order, error) {
-	o := &order.Order{}
-	if err := r.Validate(); err != nil {
-		return o, aphgrpc.HandleInvalidParamError(ctx, err)
+// GetOrder handles getting an order by ID.
+func (s *OrderService) GetOrder(
+	ctx context.Context,
+	rdr *order.OrderId,
+) (*order.Order, error) {
+	ord := &order.Order{}
+	if err := rdr.Validate(); err != nil {
+		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.GetOrder(r.Id)
+	m, err := s.repo.GetOrder(rdr.Id)
 	if err != nil {
-		return o, aphgrpc.HandleGetError(ctx, err)
+		return ord, aphgrpc.HandleGetError(ctx, err)
 	}
 	if m.NotFound {
-		return o, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	o.Data = &order.Order_Data{
+	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
 		Id:   m.Key,
 		Attributes: &order.OrderAttributes{
@@ -72,23 +83,27 @@ func (s *OrderService) GetOrder(ctx context.Context, r *order.OrderId) (*order.O
 			Items:            m.Items,
 		},
 	}
-	return o, nil
+
+	return ord, nil
 }
 
-// CreateOrder handles the creation of a new order
-func (s *OrderService) CreateOrder(ctx context.Context, r *order.NewOrder) (*order.Order, error) {
-	o := &order.Order{}
-	if err := r.Validate(); err != nil {
-		return o, aphgrpc.HandleInvalidParamError(ctx, err)
+// CreateOrder handles the creation of a new order.
+func (s *OrderService) CreateOrder(
+	ctx context.Context,
+	rdr *order.NewOrder,
+) (*order.Order, error) {
+	ord := &order.Order{}
+	if err := rdr.Validate(); err != nil {
+		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
-	m, err := s.repo.AddOrder(r)
+	m, err := s.repo.AddOrder(rdr)
 	if err != nil {
-		return o, aphgrpc.HandleInsertError(ctx, err)
+		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
 	if m.NotFound {
-		return o, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	o.Data = &order.Order_Data{
+	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
 		Id:   m.Key,
 		Attributes: &order.OrderAttributes{
@@ -106,24 +121,27 @@ func (s *OrderService) CreateOrder(ctx context.Context, r *order.NewOrder) (*ord
 			Items:            m.Items,
 		},
 	}
-	s.publisher.Publish(s.Topics["orderCreate"], o)
-	return o, nil
+	s.publisher.Publish(s.Topics["orderCreate"], ord)
+	return ord, nil
 }
 
 // UpdateOrder handles updating an existing order
-func (s *OrderService) UpdateOrder(ctx context.Context, r *order.OrderUpdate) (*order.Order, error) {
-	o := &order.Order{}
+func (s *OrderService) UpdateOrder(
+	ctx context.Context,
+	r *order.OrderUpdate,
+) (*order.Order, error) {
+	ord := &order.Order{}
 	if err := r.Validate(); err != nil {
-		return o, aphgrpc.HandleInvalidParamError(ctx, err)
+		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
 	m, err := s.repo.EditOrder(r)
 	if err != nil {
-		return o, aphgrpc.HandleUpdateError(ctx, err)
+		return ord, aphgrpc.HandleUpdateError(ctx, err)
 	}
 	if m.NotFound {
-		return o, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	o.Data = &order.Order_Data{
+	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
 		Id:   m.Key,
 		Attributes: &order.OrderAttributes{
@@ -141,12 +159,15 @@ func (s *OrderService) UpdateOrder(ctx context.Context, r *order.OrderUpdate) (*
 			Items:            m.Items,
 		},
 	}
-	s.publisher.Publish(s.Topics["orderUpdate"], o)
-	return o, nil
+	s.publisher.Publish(s.Topics["orderUpdate"], ord)
+	return ord, nil
 }
 
 // ListOrders lists all existing orders
-func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) (*order.OrderCollection, error) {
+func (s *OrderService) ListOrders(
+	ctx context.Context,
+	r *order.ListParameters,
+) (*order.OrderCollection, error) {
 	oc := &order.OrderCollection{}
 	var l int64
 	c := r.Cursor
@@ -161,15 +182,26 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 		if err != nil {
 			return oc, fmt.Errorf("error parsing filter string: %s", err)
 		}
-		str, err := query.GenAQLFilterStatement(&query.StatementParameters{Fmap: arangodb.FMap, Filters: p, Doc: "s"})
+		str, err := query.GenAQLFilterStatement(
+			&query.StatementParameters{
+				Fmap:    arangodb.FMap,
+				Filters: p,
+				Doc:     "s",
+			},
+		)
 		if err != nil {
-			return oc, fmt.Errorf("error generating AQL filter statement: %s", err)
+			return oc, fmt.Errorf(
+				"error generating AQL filter statement: %s",
+				err,
+			)
 		}
 		// if the parsed statement is empty FILTER, just return empty string
 		if str == "FILTER " {
 			str = ""
 		}
-		mc, err := s.repo.ListOrders(&order.ListParameters{Cursor: c, Limit: l, Filter: str})
+		mc, err := s.repo.ListOrders(
+			&order.ListParameters{Cursor: c, Limit: l, Filter: str},
+		)
 		if err != nil {
 			return oc, aphgrpc.HandleGetError(ctx, err)
 		}
@@ -253,19 +285,22 @@ func (s *OrderService) ListOrders(ctx context.Context, r *order.ListParameters) 
 }
 
 // LoadOrder handles the loading of an existing order
-func (s *OrderService) LoadOrder(ctx context.Context, r *order.ExistingOrder) (*order.Order, error) {
-	o := &order.Order{}
+func (s *OrderService) LoadOrder(
+	ctx context.Context,
+	r *order.ExistingOrder,
+) (*order.Order, error) {
+	ord := &order.Order{}
 	if err := r.Validate(); err != nil {
-		return o, aphgrpc.HandleInvalidParamError(ctx, err)
+		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
 	m, err := s.repo.LoadOrder(r)
 	if err != nil {
-		return o, aphgrpc.HandleInsertError(ctx, err)
+		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
 	if m.NotFound {
-		return o, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	o.Data = &order.Order_Data{
+	ord.Data = &order.Order_Data{
 		Type: s.GetResourceName(),
 		Id:   m.Key,
 		Attributes: &order.OrderAttributes{
@@ -283,12 +318,15 @@ func (s *OrderService) LoadOrder(ctx context.Context, r *order.ExistingOrder) (*
 			Items:            m.Items,
 		},
 	}
-	s.publisher.Publish(s.Topics["orderCreate"], o)
-	return o, nil
+	s.publisher.Publish(s.Topics["orderCreate"], ord)
+	return ord, nil
 }
 
 // PrepareForOrder clears the database to prepare for loading data
-func (s *OrderService) PrepareForOrder(ctx context.Context, r *empty.Empty) (*empty.Empty, error) {
+func (s *OrderService) PrepareForOrder(
+	ctx context.Context,
+	r *empty.Empty,
+) (*empty.Empty, error) {
 	e := &empty.Empty{}
 	if err := s.repo.ClearOrders(); err != nil {
 		return e, aphgrpc.HandleGenericError(ctx, err)
@@ -299,7 +337,7 @@ func (s *OrderService) PrepareForOrder(ctx context.Context, r *empty.Empty) (*em
 // genNextCursorVal converts to epoch(https://en.wikipedia.org/wiki/Unix_time)
 // in milliseconds
 func genNextCursorVal(t time.Time) int64 {
-	return t.UnixNano() / 1000000
+	return t.UnixNano() / Divider
 }
 
 func statusToEnum(status string) order.OrderStatus {
