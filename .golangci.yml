@@ -1,4 +1,6 @@
 linters-settings:
+   funlen: 
+    lines: 80
    lll:
       line-length: 130
    revive:
