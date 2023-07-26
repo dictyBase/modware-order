@@ -13,23 +13,41 @@ type natsPublisher struct {
 	econn *gnats.EncodedConn
 }
 
-func NewPublisher(host, port string, options ...gnats.Option) (message.Publisher, error) {
-	nc, err := gnats.Connect(fmt.Sprintf("nats://%s:%s", host, port), options...)
+func NewPublisher(
+	host, port string,
+	options ...gnats.Option,
+) (message.Publisher, error) {
+	ntc, err := gnats.Connect(
+		fmt.Sprintf("nats://%s:%s", host, port),
+		options...)
 	if err != nil {
-		return &natsPublisher{}, err
+		return &natsPublisher{}, fmt.Errorf(
+			"unable to connect to nats server %s",
+			err,
+		)
 	}
-	ec, err := gnats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	enc, err := gnats.NewEncodedConn(ntc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		return &natsPublisher{}, err
+		return &natsPublisher{}, fmt.Errorf(
+			"error in connecting to nats server %s",
+			err,
+		)
 	}
-	return &natsPublisher{econn: ec}, nil
+
+	return &natsPublisher{econn: enc}, nil
 }
 
 func (n *natsPublisher) Publish(subj string, ord *order.Order) error {
-	return n.econn.Publish(subj, ord)
+	err := n.econn.Publish(subj, ord)
+	if err != nil {
+		return fmt.Errorf("error in publishing to nats server %s", err)
+	}
+
+	return nil
 }
 
 func (n *natsPublisher) Close() error {
 	n.econn.Close()
+
 	return nil
 }
