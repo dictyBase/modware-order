@@ -13,6 +13,10 @@ linters-settings:
         - .HandleGetError(
         - .HandleGenericError(
         - .HandleInsertError(
+        - .HandleNotFoundError(
+        - .HandleInvalidError(
+        - .HandleInvalidParamError(
+        - .HandleUpdateError(
         - .Errorf(
         - errors.New(
 linters:
