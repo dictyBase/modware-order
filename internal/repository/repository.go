@@ -6,7 +6,7 @@ import (
 )
 
 // OrderRepository is an interface for accessing
-// stock order data
+// stock order data.
 type OrderRepository interface {
 	GetOrder(id string) (*model.OrderDoc, error)
 	AddOrder(no *order.NewOrder) (*model.OrderDoc, error)
