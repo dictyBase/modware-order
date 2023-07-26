@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	driver "github.com/arangodb/go-driver"
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/dictyBase/modware-order/internal/repository"
-	"github.com/golang/protobuf/ptypes"
 )
 
 type arangorepository struct {
@@ -128,47 +128,54 @@ func (ar *arangorepository) EditOrder(
 	return mdl, nil
 }
 
+func (ar *arangorepository) stmtWithFilter(pls *order.ListParameters) string {
+	if pls.Cursor == 0 { // no cursor so return first set of result
+		return fmt.Sprintf(
+			orderListWithFilter,
+			ar.sorder.Name(),
+			pls.Filter,
+			pls.Limit+1,
+		)
+	}
+
+	return fmt.Sprintf(
+		orderListFilterWithCursor,
+		ar.sorder.Name(),
+		pls.Cursor,
+		pls.Filter,
+		pls.Limit+1,
+	)
+}
+
+func (ar *arangorepository) stmtWithOutFilter(
+	pls *order.ListParameters,
+) string {
+	if pls.Cursor == 0 {
+		return fmt.Sprintf(
+			orderList,
+			ar.sorder.Name(),
+			pls.Limit+1,
+		)
+	}
+
+	return fmt.Sprintf(
+		orderListWithCursor,
+		ar.sorder.Name(),
+		pls.Cursor,
+		pls.Limit+1,
+	)
+}
+
 // ListOrders provides a list of all orders.
 func (ar *arangorepository) ListOrders(
 	pls *order.ListParameters,
 ) ([]*model.OrderDoc, error) {
 	var odr []*model.OrderDoc
 	var stmt string
-	cur := pls.Cursor
-	lmt := pls.Limit
-	flt := pls.Filter
-	if len(flt) > 0 {
-		if cur == 0 { // no cursor so return first set of result
-			stmt = fmt.Sprintf(
-				orderListWithFilter,
-				ar.sorder.Name(),
-				flt,
-				lmt+1,
-			)
-		} else { // else include both filter and cursor
-			stmt = fmt.Sprintf(
-				orderListFilterWithCursor,
-				ar.sorder.Name(),
-				cur,
-				flt,
-				lmt+1,
-			)
-		}
+	if len(pls.Filter) > 0 {
+		stmt = ar.stmtWithFilter(pls)
 	} else {
-		if cur == 0 {
-			stmt = fmt.Sprintf(
-				orderList,
-				ar.sorder.Name(),
-				lmt+1,
-			)
-		} else {
-			stmt = fmt.Sprintf(
-				orderListWithCursor,
-				ar.sorder.Name(),
-				cur,
-				lmt+1,
-			)
-		}
+		stmt = ar.stmtWithOutFilter(pls)
 	}
 	rsd, err := ar.database.Search(stmt)
 	if err != nil {
@@ -261,9 +268,11 @@ func addableOrderBindParams(
 func existingOrderBindParams(
 	attr *order.ExistingOrderAttributes,
 ) map[string]interface{} {
+	ctime := attr.CreatedAt.AsTime().Format(time.RFC3339)
+
 	return map[string]interface{}{
-		"created_at": ptypes.TimestampString(attr.CreatedAt),
-		"updated_at": ptypes.TimestampString(attr.CreatedAt),
+		"created_at": ctime,
+		"updated_at": ctime,
 		"purchaser":  attr.Purchaser,
 		"items":      attr.Items,
 	}
