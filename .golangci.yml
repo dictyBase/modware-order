@@ -9,10 +9,12 @@ linters-settings:
       excludes:
         - G404
    wrapcheck:
-      ignorePackageGlobs:
-        - github.com/dictyBase/aphgrpc
-        - github.com/dictyBase/arangomanager
-        - github.com/arangodb/go-driver
+      ignoreSigs:
+        - .HandleGetError(
+        - .HandleGenericError(
+        - .HandleInsertError(
+        - .Errorf(
+        - errors.New(
 linters:
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
