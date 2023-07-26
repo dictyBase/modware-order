@@ -205,60 +205,74 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestEditOrder(t *testing.T) {
+	t.Parallel()
+	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
-	defer repo.ClearOrders()
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	defer repo.ClearOrders() //nolint
 	no := newTestOrder("art@vandelayindustries.com")
-	// add new test order
-	m, err := repo.AddOrder(no)
-	if err != nil {
-		t.Fatalf("error in adding order %s", err)
-	}
-	// set the content to update
-	testData := &order.OrderUpdate{
-		Data: &order.OrderUpdate_Data{
-			Type: "order",
-			Id:   m.Key,
-			Attributes: &order.OrderUpdateAttributes{
-				Courier:          "UPS",
-				CourierAccount:   "99999999",
-				Comments:         "This is an updated test comment",
-				Payment:          "Check",
-				PurchaseOrderNum: "33333333",
-				Items:            []string{"xyz", "abc"},
-				Status:           order.OrderStatus_GROWING,
-			},
+	mrd, err := repo.AddOrder(no)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	testData := &order.OrderUpdate{Data: &order.OrderUpdate_Data{
+		Type: "order",
+		Id:   mrd.Key,
+		Attributes: &order.OrderUpdateAttributes{
+			Courier:          "UPS",
+			CourierAccount:   "99999999",
+			Comments:         "This is an updated test comment",
+			Payment:          "Check",
+			PurchaseOrderNum: "33333333",
+			Items:            []string{"xyz", "abc"},
+			Status:           order.OrderStatus_GROWING,
 		},
-	}
-	// edit test order by providing updated data
-	e, err := repo.EditOrder(testData)
-	if err != nil {
-		t.Fatalf("error in editing order %s with ID %s", m.Key, err)
-	}
-	assert := assert.New(t)
-	// tests to make sure updated data matches passed in data
-	assert.Equal(e.Courier, testData.Data.Attributes.Courier, "should match the new courier")
-	assert.Equal(e.CourierAccount, testData.Data.Attributes.CourierAccount, "should match the new courier account")
-	assert.Equal(e.Comments, testData.Data.Attributes.Comments, "should match the new comments")
-	assert.Equal(e.Payment, testData.Data.Attributes.Payment, "should match the new payment")
-	assert.Equal(e.PurchaseOrderNum, testData.Data.Attributes.PurchaseOrderNum, "should match the new purchase order number")
-	assert.ElementsMatch(e.Items, testData.Data.Attributes.Items, "should match the new items")
-	assert.Equal(e.Status, testData.Data.Attributes.Status.String(), "should match the new status")
-
-	// get the recently modified order so we can compare
-	g, err := repo.GetOrder(m.Key)
-	if err != nil {
-		t.Fatalf("error in getting order %s with ID %s", m.Key, err)
-	}
-	// make sure existing data wasn't overwritten by update
-	assert.Equal(g.Payer, m.Payer, "should match the already existing payer")
-	assert.Equal(e.Courier, g.Courier, "should match the new courier")
-
-	// set data with nonexistent ID
-	ed := &order.OrderUpdate{
+	}}
+	edr, err := repo.EditOrder(testData)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Equal(
+		edr.Courier,
+		testData.Data.Attributes.Courier,
+		"should match the new courier",
+	)
+	assert.Equal(
+		edr.CourierAccount,
+		testData.Data.Attributes.CourierAccount,
+		"should match the new courier account",
+	)
+	assert.Equal(
+		edr.Comments,
+		testData.Data.Attributes.Comments,
+		"should match the new comments",
+	)
+	assert.Equal(
+		edr.Payment,
+		testData.Data.Attributes.Payment,
+		"should match the new payment",
+	)
+	assert.Equal(
+		edr.PurchaseOrderNum,
+		testData.Data.Attributes.PurchaseOrderNum,
+		"should match the new purchase order number",
+	)
+	assert.ElementsMatch(
+		edr.Items,
+		testData.Data.Attributes.Items,
+		"should match the new items",
+	)
+	assert.Equal(
+		edr.Status,
+		testData.Data.Attributes.Status.String(),
+		"should match the new status",
+	)
+	grd, err := repo.GetOrder(mrd.Key)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Equal(
+		grd.Payer,
+		mrd.Payer,
+		"should match the already existing payer",
+	)
+	assert.Equal(edr.Courier, grd.Courier, "should match the new courier")
+	oed := &order.OrderUpdate{
 		Data: &order.OrderUpdate_Data{
 			Type: "order",
 			Id:   "1",
@@ -267,10 +281,8 @@ func TestEditOrder(t *testing.T) {
 			},
 		},
 	}
-	ee, err := repo.EditOrder(ed)
-	if err != nil {
-		t.Fatalf("error in editing order: %s", err)
-	}
+	ee, err := repo.EditOrder(oed)
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.True(ee.NotFound, "entry should not exist")
 }
 
