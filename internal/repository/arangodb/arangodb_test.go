@@ -72,31 +72,67 @@ func TestMain(m *testing.M) {
 		log.Fatalf("unable to create collection %s %s", collection, err)
 	}
 	code := m.Run()
+	dbh.Drop() //nolint
 	os.Exit(code)
 }
 
 func TestAddOrder(t *testing.T) {
 	t.Parallel()
+	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
 	if err != nil {
 		t.Fatalf("error in connecting to order repository %s", err)
 	}
-	no := newTestOrder("art@vandelayindustries.com")
+	defer repo.ClearOrders() //nolint
+	ntr := newTestOrder("art@vandelayindustries.com")
+	mro, err := repo.AddOrder(ntr)
 	if err != nil {
 		t.Fatalf("error in adding order %s", err)
 	}
-	assert.Equal(m.Courier, no.Data.Attributes.Courier, "should match the courier")
-	assert.Equal(m.CourierAccount, no.Data.Attributes.CourierAccount, "should match the courier account")
-	assert.Equal(m.Comments, no.Data.Attributes.Comments, "should match the comments")
-	assert.Equal(m.Payment, no.Data.Attributes.Payment, "should match the payment")
-	assert.Equal(m.PurchaseOrderNum, no.Data.Attributes.PurchaseOrderNum, "should match the purchase order number")
-	assert.Equal(m.Status, no.Data.Attributes.Status.String(), "should match the status")
-	assert.Equal(m.Consumer, no.Data.Attributes.Consumer, "should match the consumer")
-	assert.Equal(m.Payer, no.Data.Attributes.Payer, "should match the payer")
-	assert.Equal(m.Purchaser, no.Data.Attributes.Purchaser, "should match the purchaser")
-	assert.Equal(m.Items, no.Data.Attributes.Items, "should match the items")
-	assert.NotEmpty(m.Key, "should not have empty key/id")
+	assert.Equal(
+		mro.Courier,
+		ntr.Data.Attributes.Courier,
+		"should match the courier",
+	)
+	assert.Equal(
+		mro.CourierAccount,
+		ntr.Data.Attributes.CourierAccount,
+		"should match the courier account",
+	)
+	assert.Equal(
+		mro.Comments,
+		ntr.Data.Attributes.Comments,
+		"should match the comments",
+	)
+	assert.Equal(
+		mro.Payment,
+		ntr.Data.Attributes.Payment,
+		"should match the payment",
+	)
+	assert.Equal(
+		mro.PurchaseOrderNum,
+		ntr.Data.Attributes.PurchaseOrderNum,
+		"should match the purchase order number",
+	)
+	assert.Equal(
+		mro.Status,
+		ntr.Data.Attributes.Status.String(),
+		"should match the status",
+	)
+	assert.Equal(
+		mro.Consumer,
+		ntr.Data.Attributes.Consumer,
+		"should match the consumer",
+	)
+	assert.Equal(mro.Payer, ntr.Data.Attributes.Payer, "should match the payer")
+	assert.Equal(
+		mro.Purchaser,
+		ntr.Data.Attributes.Purchaser,
+		"should match the purchaser",
+	)
+	assert.Equal(mro.Items, ntr.Data.Attributes.Items, "should match the items")
+	assert.NotEmpty(mro.Key, "should not have empty key/id")
 }
 
 func TestGetOrder(t *testing.T) {
