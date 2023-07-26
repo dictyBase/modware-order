@@ -6,21 +6,24 @@ import (
 	"github.com/urfave/cli"
 )
 
-// ServerArgs validates that the necessary flags are not missing
-func ServerArgs(c *cli.Context) error {
-	for _, p := range []string{
+const ExitNum = 2
+
+// ServerArgs validates that the necessary flags are not missing.
+func ServerArgs(cltx *cli.Context) error {
+	for _, param := range []string{
 		"arangodb-pass",
 		"arangodb-database",
 		"arangodb-user",
 		"nats-host",
 		"nats-port",
 	} {
-		if len(c.String(p)) == 0 {
+		if len(cltx.String(param)) == 0 {
 			return cli.NewExitError(
-				fmt.Sprintf("argument %s is missing", p),
-				2,
+				fmt.Sprintf("argument %s is missing", param),
+				ExitNum,
 			)
 		}
 	}
+
 	return nil
 }
