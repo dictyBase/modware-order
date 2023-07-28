@@ -18,8 +18,50 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+)
+
+var seedRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 var gta *testarango.TestArango
 var collection = "stock_orders"
+
+func stringWithCharset(length int, charset string) string {
+	var byt []byte
+	for i := 0; i < length; i++ {
+		byt = append(
+			byt,
+			charset[seedRand.Intn(len(charset))],
+		)
+	}
+
+	return string(byt)
+}
+
+func RandString(length int) string {
+	return stringWithCharset(length, charSet)
+}
+
+func convertFilterToQuery(fstr string) string {
+	// parse filter logic
+	// this needs to be done here since it is implemented in the service, not repository
+	pft, err := query.ParseFilterString(fstr)
+	if err != nil {
+		log.Printf("error parsing filter string %s", err)
+
+		return fstr
+	}
+	str, err := query.GenAQLFilterStatement(
+		&query.StatementParameters{Fmap: FMap, Filters: pft, Doc: "s"},
+	)
+	if err != nil {
+		log.Printf("error generating AQL filter statement %s", err)
+
+		return str
+	}
+
+	return str
+}
 
 func getConnectParams() *manager.ConnectParams {
 	return &manager.ConnectParams{
@@ -53,6 +95,20 @@ func newTestOrder(consumer string) *order.NewOrder {
 				Items:            []string{"DBS2109858", "DBP8349822"},
 			},
 		},
+	}
+}
+
+func testModelListSort(assert *assert.Assertions, m []*model.OrderDoc) {
+	itr, err := NewPairWiseIterator(m)
+	assert.NoErrorf(err, "expect no error, received %s", err)
+	for itr.NextPair() {
+		cm, nm := itr.Pair()
+		assert.Truef(
+			nm.CreatedAt.Before(cm.CreatedAt),
+			"date %s should be before %s",
+			nm.CreatedAt.String(),
+			cm.CreatedAt.String(),
+		)
 	}
 }
 
@@ -424,61 +480,4 @@ func TestClearOrders(t *testing.T) {
 	lo2, err := repo.ListOrders(&order.ListParameters{Limit: 100})
 	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(lo2, 0, "should not list any orders")
-}
-
-func testModelListSort(assert *assert.Assertions, m []*model.OrderDoc) {
-	itr, err := NewPairWiseIterator(m)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	for itr.NextPair() {
-		cm, nm := itr.Pair()
-		assert.Truef(
-			nm.CreatedAt.Before(cm.CreatedAt),
-			"date %s should be before %s",
-			nm.CreatedAt.String(),
-			cm.CreatedAt.String(),
-		)
-	}
-}
-
-const (
-	charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-)
-
-var seedRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-func stringWithCharset(length int, charset string) string {
-	var byt []byte
-	for i := 0; i < length; i++ {
-		byt = append(
-			byt,
-			charset[seedRand.Intn(len(charset))],
-		)
-	}
-
-	return string(byt)
-}
-
-func RandString(length int) string {
-	return stringWithCharset(length, charSet)
-}
-
-func convertFilterToQuery(fstr string) string {
-	// parse filter logic
-	// this needs to be done here since it is implemented in the service, not repository
-	pft, err := query.ParseFilterString(fstr)
-	if err != nil {
-		log.Printf("error parsing filter string %s", err)
-
-		return fstr
-	}
-	str, err := query.GenAQLFilterStatement(
-		&query.StatementParameters{Fmap: FMap, Filters: pft, Doc: "s"},
-	)
-	if err != nil {
-		log.Printf("error generating AQL filter statement %s", err)
-
-		return str
-	}
-
-	return str
 }
