@@ -6,7 +6,7 @@ require (
 	github.com/dictyBase/arangomanager v0.3.4
 	github.com/dictyBase/go-genproto v0.0.0-20210728232706-b7a70ac1e3c1
 	github.com/go-playground/validator/v10 v10.14.1 // indirect
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/nats-io/nats-server/v2 v2.9.20 // indirect
@@ -15,8 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli v1.22.14
 	golang.org/x/net v0.12.0 // indirect
-	google.golang.org/appengine v1.6.0 // indirect
-	google.golang.org/grpc v1.39.0
+	google.golang.org/grpc v1.57.0
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )
 
