@@ -64,7 +64,7 @@ linters:
     - nlreturn
     - nolintlint
     - prealloc
-    - paralleltest
+    # - paralleltest
     - predeclared
     - revive
     - rowserrcheck
