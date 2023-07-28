@@ -77,7 +77,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddOrder(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -132,7 +132,7 @@ func TestAddOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	t.Parallel()
+	// t.jarallel()
 	connP := getConnectParams()
 	assert := assert.New(t)
 	repo, err := NewOrderRepo(connP, collection)
@@ -202,7 +202,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestEditOrder(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -284,7 +284,7 @@ func TestEditOrder(t *testing.T) {
 }
 
 func TestListOrders(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -367,7 +367,7 @@ func TestListOrders(t *testing.T) {
 }
 
 func TestLoadOrder(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
