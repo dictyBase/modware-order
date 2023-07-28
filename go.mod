@@ -10,7 +10,8 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/nats-io/go-nats v1.7.2
+	github.com/nats-io/nats-server/v2 v2.9.20 // indirect
+	github.com/nats-io/nats.go v1.28.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli v1.22.9
