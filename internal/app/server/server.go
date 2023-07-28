@@ -15,7 +15,6 @@ import (
 	"github.com/dictyBase/modware-order/internal/message/nats"
 	"github.com/dictyBase/modware-order/internal/repository"
 	"github.com/dictyBase/modware-order/internal/repository/arangodb"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	gnats "github.com/nats-io/nats.go"
@@ -59,7 +58,7 @@ func startGRPCServer(
 	}
 
 	grpcS := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
+		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_logrus.UnaryServerInterceptor(getLogger(clt)),
 		),
