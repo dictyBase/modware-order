@@ -13,6 +13,7 @@ import (
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/app/service"
 	"github.com/dictyBase/modware-order/internal/message/nats"
+	"github.com/dictyBase/modware-order/internal/repository"
 	"github.com/dictyBase/modware-order/internal/repository/arangodb"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -26,8 +27,7 @@ import (
 
 const ExitNo = 2
 
-// RunServer starts and runs the server.
-func RunServer(clt *cli.Context) error {
+func createOrderRepo(clt *cli.Context) (repository.OrderRepository, error) {
 	arPort, _ := strconv.Atoi(clt.String("arangodb-port"))
 	connP := &manager.ConnectParams{
 		User:     clt.String("arangodb-user"),
@@ -37,12 +37,14 @@ func RunServer(clt *cli.Context) error {
 		Port:     arPort,
 		Istls:    clt.Bool("is-secure"),
 	}
-	anrepo, err := arangodb.NewOrderRepo(connP, "stock_order")
-	if err != nil {
-		return cli.NewExitError(
-			fmt.Sprintf("cannot connect to arangodb order repository %s",
-				err.Error()), ExitNo)
-	}
+
+	return arangodb.NewOrderRepo(connP, "stock_order") //nolint:wrapcheck
+}
+
+func startGRPCServer(
+	clt *cli.Context,
+	anrepo repository.OrderRepository,
+) error {
 	msn, err := nats.NewPublisher(
 		clt.String("nats-host"),
 		clt.String("nats-port"),
@@ -55,6 +57,7 @@ func RunServer(clt *cli.Context) error {
 				err.Error(),
 			), ExitNo)
 	}
+
 	grpcS := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(),
@@ -73,15 +76,34 @@ func RunServer(clt *cli.Context) error {
 		// register reflection service on gRPC server
 		reflection.Register(grpcS)
 	}
+
 	// create listener
 	endP := fmt.Sprintf(":%s", clt.String("port"))
 	lis, err := net.Listen("tcp", endP)
 	if err != nil {
 		return cli.NewExitError(fmt.Sprintf("failed to listen %s", err), ExitNo)
 	}
+
 	log.Printf("starting grpc server on %s", endP)
 	if err := grpcS.Serve(lis); err != nil {
 		return fmt.Errorf("error in starting grpc server %s", err)
+	}
+
+	return nil
+}
+
+// RunServer starts and runs the server.
+func RunServer(clt *cli.Context) error {
+	anrepo, err := createOrderRepo(clt)
+	if err != nil {
+		return cli.NewExitError(
+			fmt.Sprintf("cannot connect to arangodb order repository %s",
+				err.Error()), ExitNo)
+	}
+
+	err = startGRPCServer(clt, anrepo)
+	if err != nil {
+		return err
 	}
 
 	return nil
