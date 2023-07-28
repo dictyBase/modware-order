@@ -403,7 +403,7 @@ func TestLoadOrder(t *testing.T) {
 }
 
 func TestClearOrders(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
