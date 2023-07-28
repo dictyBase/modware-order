@@ -81,15 +81,11 @@ func TestAddOrder(t *testing.T) {
 	assert := assert.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	if err != nil {
-		t.Fatalf("error in connecting to order repository %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	defer repo.ClearOrders() //nolint
 	ntr := newTestOrder("art@vandelayindustries.com")
 	mro, err := repo.AddOrder(ntr)
-	if err != nil {
-		t.Fatalf("error in adding order %s", err)
-	}
+	assert.NoErrorf(err, "expect no error, received %s", err)
 	assert.Equal(
 		mro.Courier,
 		ntr.Data.Attributes.Courier,
@@ -147,6 +143,7 @@ func TestGetOrder(t *testing.T) {
 	assert.NoErrorf(err, "expect no error, received %s", err)
 	grd, err := repo.GetOrder(mrd.Key)
 	assert.NoErrorf(err, "expect no error, received %s", err)
+	assert.Falsef(grd.NotFound, "expect the order %s to be found", mrd.Key)
 	assert.Equal(
 		grd.Courier,
 		nrd.Data.Attributes.Courier,
