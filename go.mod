@@ -12,7 +12,7 @@ require (
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/nats-io/nats-server/v2 v2.9.20 // indirect
 	github.com/nats-io/nats.go v1.28.0
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli v1.22.9
 	golang.org/x/net v0.12.0 // indirect
