@@ -7,7 +7,7 @@ require (
 	github.com/dictyBase/go-genproto v0.0.0-20210728232706-b7a70ac1e3c1
 	github.com/go-playground/validator/v10 v10.14.1 // indirect
 	github.com/golang/protobuf v1.5.3
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/nats-io/nats-server/v2 v2.9.20 // indirect
 	github.com/nats-io/nats.go v1.28.0
