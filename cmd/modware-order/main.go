@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/dictyBase/aphgrpc"
+	arango "github.com/dictyBase/arangomanager/command/flag"
 	"github.com/dictyBase/modware-order/internal/app/server"
 	"github.com/dictyBase/modware-order/internal/app/validate"
 	"github.com/urfave/cli"
@@ -41,47 +43,15 @@ func main() {
 }
 
 func serverFlags() []cli.Flag {
-	return []cli.Flag{
-		cli.StringFlag{
-			Name:   "arangodb-pass, pass",
-			EnvVar: "ARANGODB_PASS",
-			Usage:  "arangodb database password",
-		},
+	flg := make([]cli.Flag, 0)
+	flg = append(flg, arango.ArangoFlags()...)
+	flg = append(flg, aphgrpc.NatsFlag()...)
+	flg = append(flg, []cli.Flag{
 		cli.StringFlag{
 			Name:   "arangodb-database, db",
 			EnvVar: "ARANGODB_DATABASE",
 			Usage:  "arangodb database name",
-		},
-		cli.StringFlag{
-			Name:   "arangodb-user, user",
-			EnvVar: "ARANGODB_USER",
-			Usage:  "arangodb database user",
-		},
-		cli.StringFlag{
-			Name:   "arangodb-host, host",
-			Value:  "arangodb",
-			EnvVar: "ARANGODB_SERVICE_HOST",
-			Usage:  "arangodb database host",
-		},
-		cli.StringFlag{
-			Name:   "arangodb-port",
-			EnvVar: "ARANGODB_SERVICE_PORT",
-			Usage:  "arangodb database port",
-			Value:  "8529",
-		},
-		cli.BoolTFlag{
-			Name:  "is-secure",
-			Usage: "flag for secured or unsecured arangodb endpoint",
-		},
-		cli.StringFlag{
-			Name:   "nats-host",
-			EnvVar: "NATS_SERVICE_HOST",
-			Usage:  "nats messaging server host",
-		},
-		cli.StringFlag{
-			Name:   "nats-port",
-			EnvVar: "NATS_SERVICE_PORT",
-			Usage:  "nats messaging server port",
+			Value:  "stock",
 		},
 		cli.StringFlag{
 			Name:  "port",
@@ -97,5 +67,7 @@ func serverFlags() []cli.Flag {
 			Name:  "reflection, ref",
 			Usage: "flag for enabling server reflection",
 		},
-	}
+	}...)
+
+	return flg
 }
