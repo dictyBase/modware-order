@@ -2,6 +2,7 @@ module github.com/dictyBase/modware-order
 
 require (
 	github.com/arangodb/go-driver v1.6.0
+	github.com/dictyBase/aphgrpc v1.4.2 // indirect
 	github.com/dictyBase/apihelpers v0.0.0-20191119134328-9ff59ee4c896
 	github.com/dictyBase/arangomanager v0.4.0
 	github.com/dictyBase/go-genproto v0.0.0-20210728232706-b7a70ac1e3c1
