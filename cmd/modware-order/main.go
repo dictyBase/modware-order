@@ -51,7 +51,7 @@ func serverFlags() []cli.Flag {
 			Name:   "arangodb-database, db",
 			EnvVar: "ARANGODB_DATABASE",
 			Usage:  "arangodb database name",
-			Value:  "stock",
+			Value:  "order",
 		},
 		cli.StringFlag{
 			Name:  "port",
