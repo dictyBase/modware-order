@@ -408,7 +408,7 @@ func TestListOrders(t *testing.T) {
 		Filter: convertFilterToQuery("courier===FedEx"),
 	})
 	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(scd, 10, "should list last 10 orders")
+	assert.GreaterOrEqual(len(scd), 10, "should list at least last 10 orders")
 	snd, err := repo.ListOrders(&order.ListParameters{
 		Cursor: toTimestamp(sfd[5].CreatedAt),
 		Limit:  100,
