@@ -396,9 +396,6 @@ func TestListOrders(t *testing.T) {
 		lo4[0],
 		"last item from previous five results and first item from next three results should be the same",
 	)
-	/* for _, mdl := range [][]*model.OrderDoc{lrd, lo2, lo3, lo4} {
-		testModelListSort(assert, mdl)
-	} */
 	sfd, err := repo.ListOrders(&order.ListParameters{
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===FedEx"),
