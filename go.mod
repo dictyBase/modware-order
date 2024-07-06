@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli v1.22.15
 	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.65.0
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )
 
