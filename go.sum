@@ -10,8 +10,8 @@ github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYU
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/arangodb/go-driver v0.0.0-20190514134119-4cd2eb482d16/go.mod h1:5nMxlcbN6PHA05uGUw2EH6PIQHvdRVTrg/S/GM8jG4w=
 github.com/arangodb/go-driver v1.6.0/go.mod h1:HQmdGkvNMVBTE3SIPSQ8T/ZddC6iwNsfMR+dDJQxIsI=
-github.com/arangodb/go-driver v1.6.2 h1:3o4inejwR7VMmsKvQJ6hepx4au9sUT6C/RDrXykuD1g=
-github.com/arangodb/go-driver v1.6.2/go.mod h1:2BCE6y3DNSLqIXnDvf4CR6WdzZZloYudEy+sasimLiQ=
+github.com/arangodb/go-driver v1.6.4 h1:tuizDP620e3OFaoFkEh07n4bHSTvCOvm5qVGQ/+zMrs=
+github.com/arangodb/go-driver v1.6.4/go.mod h1:oLZCzkEGh82I2XBcMkrDtqsMXFg6QkIRgbqLGalh6jc=
 github.com/arangodb/go-velocypack v0.0.0-20190129082528-7896a965b4ad/go.mod h1:7QCjpWXdB49P6fql1CxmsBWd8z/T4L4pqFLTnc10xNM=
 github.com/arangodb/go-velocypack v0.0.0-20200318135517-5af53c29c67e h1:Xg+hGrY2LcQBbxd0ZFdbGSyRKTYMZCfBbw/pMJFOk1g=
 github.com/arangodb/go-velocypack v0.0.0-20200318135517-5af53c29c67e/go.mod h1:mq7Shfa/CaixoDxiyAAc5jZ6CVBAyPaNQCGS7mkj4Ho=
