@@ -15,15 +15,18 @@ import (
 	"github.com/dictyBase/arangomanager/testarango"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
 	charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
-var seedRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-var gta *testarango.TestArango
-var collection = "stock_orders"
+var (
+	seedRand   *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	gta        *testarango.TestArango
+	collection = "stock_orders"
+)
 
 func stringWithCharset(length int, charset string) string {
 	var byt []byte
@@ -132,15 +135,16 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddOrder(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	assert := assert.New(t)
+	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	defer repo.ClearOrders() //nolint
+	require.NoErrorf(err, "expect no error, received %s", err)
+	// defer repo.ClearOrders() //nolint
 	ntr := newTestOrder("art@vandelayindustries.com")
 	mro, err := repo.AddOrder(ntr)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	assert.Equal(
 		mro.Courier,
 		ntr.Data.Attributes.Courier,
@@ -187,12 +191,13 @@ func TestAddOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	// t.jarallel()
+	t.Parallel()
 	connP := getConnectParams()
 	assert := assert.New(t)
+	require := require.New(t)
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	defer repo.ClearOrders() //nolint
+	require.NoErrorf(err, "expect no error, received %s", err)
+	// defer repo.ClearOrders() //nolint
 	nrd := newTestOrder("art@vandelayindustries.com")
 	mrd, err := repo.AddOrder(nrd)
 	assert.NoErrorf(err, "expect no error, received %s", err)
@@ -257,15 +262,16 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestEditOrder(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	assert := assert.New(t)
+	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	defer repo.ClearOrders() //nolint
+	require.NoErrorf(err, "expect no error, received %s", err)
+	// defer repo.ClearOrders() //nolint
 	no := newTestOrder("art@vandelayindustries.com")
 	mrd, err := repo.AddOrder(no)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	testData := &order.OrderUpdate{Data: &order.OrderUpdate_Data{
 		Type: "order",
 		Id:   mrd.Key,
@@ -280,7 +286,7 @@ func TestEditOrder(t *testing.T) {
 		},
 	}}
 	edr, err := repo.EditOrder(testData)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	assert.Equal(
 		edr.Courier,
 		testData.Data.Attributes.Courier,
@@ -317,7 +323,7 @@ func TestEditOrder(t *testing.T) {
 		"should match the new status",
 	)
 	grd, err := repo.GetOrder(mrd.Key)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	assert.Equal(
 		grd.Payer,
 		mrd.Payer,
@@ -339,24 +345,29 @@ func TestEditOrder(t *testing.T) {
 }
 
 func TestListOrders(t *testing.T) {
-	// t.Parallel()
+	// t.Parallel() // Run sequentially
 	assert := assert.New(t)
+	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	defer repo.ClearOrders() //nolint
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.NoError(
+		repo.ClearOrders(),
+		"failed to clear orders at start of TestListOrders",
+	)
+	// defer repo.ClearOrders() //nolint
 	for i := 1; i <= 15; i++ {
 		no := newTestOrder(
 			fmt.Sprintf("%s@kramericaindustries.com", RandString(10)),
 		)
-		_, err := repo.AddOrder(no)
-		assert.NoErrorf(err, "expect no error, received %s", err)
+		_, err = repo.AddOrder(no)
+		require.NoErrorf(err, "expect no error, received %s", err)
 	}
 	lrd, err := repo.ListOrders(&order.ListParameters{Limit: 4})
 	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(lrd, 5, "should match the provided limit number + 1")
+	require.Len(lrd, 5, "should match the provided limit number + 1")
 	for _, order := range lrd {
-		assert.Equal(order.Courier, "FedEx", "should match the courier")
+		assert.Equal("FedEx", order.Courier, "should match the courier")
 		assert.NotEmpty(order.Key, "should not have empty key/id")
 	}
 	assert.NotEqual(
@@ -393,31 +404,32 @@ func TestListOrders(t *testing.T) {
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===FedEx"),
 	})
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	assert.Len(sfd, 15, "should list all 15 orders")
 	scd, err := repo.ListOrders(&order.ListParameters{
 		Cursor: toTimestamp(sfd[5].CreatedAt),
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===FedEx"),
 	})
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	assert.GreaterOrEqual(len(scd), 10, "should list at least last 10 orders")
 	snd, err := repo.ListOrders(&order.ListParameters{
 		Cursor: toTimestamp(sfd[5].CreatedAt),
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===UPS"),
 	})
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(snd, 0, "should list last no UPS orders")
+	require.NoErrorf(err, "expect no error, received %s", err)
+	assert.Empty(snd, "should list last no UPS orders")
 }
 
 func TestLoadOrder(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	assert := assert.New(t)
+	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	defer repo.ClearOrders() //nolint
+	require.NoErrorf(err, "expect no error, received %s", err)
+	// defer repo.ClearOrders() //nolint
 	tme, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
 	eod := &order.ExistingOrder{
 		Data: &order.ExistingOrder_Data{
@@ -448,25 +460,33 @@ func TestLoadOrder(t *testing.T) {
 }
 
 func TestClearOrders(t *testing.T) {
-	// t.Parallel()
 	assert := assert.New(t)
+	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.NoError(
+		repo.ClearOrders(),
+		"failed to clear orders at start of TestClearOrders",
+	)
 	// add 15 new test orders
 	for i := 1; i <= 15; i++ {
 		no := newTestOrder(
 			fmt.Sprintf("%s@kramericaindustries.com", RandString(10)),
 		)
-		_, err := repo.AddOrder(no)
+		_, err = repo.AddOrder(no)
 		assert.NoErrorf(err, "expect no error, received %s", err)
 	}
 	lo, err := repo.ListOrders(&order.ListParameters{Limit: 100})
 	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(lo, 15, "should have 15 orders in database")
+	assert.Len(
+		lo,
+		15,
+		"should have exactly 15 orders after adding them to a cleared collection",
+	)
 	err = repo.ClearOrders()
 	assert.NoErrorf(err, "expect no error, received %s", err)
 	lo2, err := repo.ListOrders(&order.ListParameters{Limit: 100})
 	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(lo2, 0, "should not list any orders")
+	assert.Empty(lo2, "should not list any orders after final clear")
 }
