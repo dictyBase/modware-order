@@ -14,7 +14,6 @@ import (
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/arangomanager/testarango"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -136,7 +135,6 @@ func TestMain(m *testing.M) {
 
 func TestAddOrder(t *testing.T) {
 	t.Parallel()
-	assert := assert.New(t)
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -145,125 +143,139 @@ func TestAddOrder(t *testing.T) {
 	ntr := newTestOrder("art@vandelayindustries.com")
 	mro, err := repo.AddOrder(ntr)
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.Equal(
+	require.Equal(
 		mro.Courier,
 		ntr.Data.Attributes.Courier,
 		"should match the courier",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.CourierAccount,
 		ntr.Data.Attributes.CourierAccount,
 		"should match the courier account",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.Comments,
 		ntr.Data.Attributes.Comments,
 		"should match the comments",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.Payment,
 		ntr.Data.Attributes.Payment,
 		"should match the payment",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.PurchaseOrderNum,
 		ntr.Data.Attributes.PurchaseOrderNum,
 		"should match the purchase order number",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.Status,
 		ntr.Data.Attributes.Status.String(),
 		"should match the status",
 	)
-	assert.Equal(
+	require.Equal(
 		mro.Consumer,
 		ntr.Data.Attributes.Consumer,
 		"should match the consumer",
 	)
-	assert.Equal(mro.Payer, ntr.Data.Attributes.Payer, "should match the payer")
-	assert.Equal(
+	require.Equal(
+		mro.Payer,
+		ntr.Data.Attributes.Payer,
+		"should match the payer",
+	)
+	require.Equal(
 		mro.Purchaser,
 		ntr.Data.Attributes.Purchaser,
 		"should match the purchaser",
 	)
-	assert.Equal(mro.Items, ntr.Data.Attributes.Items, "should match the items")
-	assert.NotEmpty(mro.Key, "should not have empty key/id")
+	require.Equal(
+		mro.Items,
+		ntr.Data.Attributes.Items,
+		"should match the items",
+	)
+	require.NotEmpty(mro.Key, "should not have empty key/id")
 }
 
 func TestGetOrder(t *testing.T) {
 	t.Parallel()
 	connP := getConnectParams()
-	assert := assert.New(t)
 	require := require.New(t)
 	repo, err := NewOrderRepo(connP, collection)
 	require.NoErrorf(err, "expect no error, received %s", err)
 	// defer repo.ClearOrders() //nolint
 	nrd := newTestOrder("art@vandelayindustries.com")
 	mrd, err := repo.AddOrder(nrd)
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	grd, err := repo.GetOrder(mrd.Key)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Falsef(grd.NotFound, "expect the order %s to be found", mrd.Key)
-	assert.Equal(
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.Falsef(grd.NotFound, "expect the order %s to be found", mrd.Key)
+	require.Equal(
 		grd.Courier,
 		nrd.Data.Attributes.Courier,
 		"should match the courier",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.CourierAccount,
 		nrd.Data.Attributes.CourierAccount,
 		"should match the courier account",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.Comments,
 		nrd.Data.Attributes.Comments,
 		"should match the comments",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.Payment,
 		nrd.Data.Attributes.Payment,
 		"should match the payment",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.PurchaseOrderNum,
 		nrd.Data.Attributes.PurchaseOrderNum,
 		"should match the purchase order number",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.Status,
 		nrd.Data.Attributes.Status.String(),
 		"should match the status",
 	)
-	assert.Equal(
+	require.Equal(
 		grd.Consumer,
 		nrd.Data.Attributes.Consumer,
 		"should match the consumer",
 	)
-	assert.Equal(grd.Payer, nrd.Data.Attributes.Payer, "should match the payer")
-	assert.Equal(
+	require.Equal(
+		grd.Payer,
+		nrd.Data.Attributes.Payer,
+		"should match the payer",
+	)
+	require.Equal(
 		grd.Purchaser,
 		nrd.Data.Attributes.Purchaser,
 		"should match the purchaser",
 	)
-	assert.Equal(grd.Items, nrd.Data.Attributes.Items, "should match the items")
-	assert.Len(grd.Items, 2, "should match length of two items")
-	assert.NotEmpty(grd.Key, "should not have empty key/id")
-	assert.True(
+	require.Equal(
+		grd.Items,
+		nrd.Data.Attributes.Items,
+		"should match the items",
+	)
+	require.Len(grd.Items, 2, "should match length of two items")
+	require.NotEmpty(grd.Key, "should not have empty key/id")
+	require.True(
 		mrd.CreatedAt.Equal(grd.CreatedAt),
 		"should match created time of order",
 	)
-	assert.True(
+	require.True(
 		mrd.UpdatedAt.Equal(grd.UpdatedAt),
 		"should match updated time of order",
 	)
 	nre, err := repo.GetOrder("1")
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.True(nre.NotFound, "entry should not exist")
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.True(nre.NotFound, "entry should not exist")
 }
 
 func TestEditOrder(t *testing.T) {
 	t.Parallel()
-	assert := assert.New(t)
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -287,49 +299,49 @@ func TestEditOrder(t *testing.T) {
 	}}
 	edr, err := repo.EditOrder(testData)
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.Equal(
+	require.Equal(
 		edr.Courier,
 		testData.Data.Attributes.Courier,
 		"should match the new courier",
 	)
-	assert.Equal(
+	require.Equal(
 		edr.CourierAccount,
 		testData.Data.Attributes.CourierAccount,
 		"should match the new courier account",
 	)
-	assert.Equal(
+	require.Equal(
 		edr.Comments,
 		testData.Data.Attributes.Comments,
 		"should match the new comments",
 	)
-	assert.Equal(
+	require.Equal(
 		edr.Payment,
 		testData.Data.Attributes.Payment,
 		"should match the new payment",
 	)
-	assert.Equal(
+	require.Equal(
 		edr.PurchaseOrderNum,
 		testData.Data.Attributes.PurchaseOrderNum,
 		"should match the new purchase order number",
 	)
-	assert.ElementsMatch(
+	require.ElementsMatch(
 		edr.Items,
 		testData.Data.Attributes.Items,
 		"should match the new items",
 	)
-	assert.Equal(
+	require.Equal(
 		edr.Status,
 		testData.Data.Attributes.Status.String(),
 		"should match the new status",
 	)
 	grd, err := repo.GetOrder(mrd.Key)
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.Equal(
+	require.Equal(
 		grd.Payer,
 		mrd.Payer,
 		"should match the already existing payer",
 	)
-	assert.Equal(edr.Courier, grd.Courier, "should match the new courier")
+	require.Equal(edr.Courier, grd.Courier, "should match the new courier")
 	oed := &order.OrderUpdate{
 		Data: &order.OrderUpdate_Data{
 			Type: "order",
@@ -340,13 +352,11 @@ func TestEditOrder(t *testing.T) {
 		},
 	}
 	ee, err := repo.EditOrder(oed)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.True(ee.NotFound, "entry should not exist")
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.True(ee.NotFound, "entry should not exist")
 }
 
-func TestListOrders(t *testing.T) {
-	// t.Parallel() // Run sequentially
-	assert := assert.New(t)
+func TestListOrders(t *testing.T) { //nolint:paralleltest
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -364,38 +374,38 @@ func TestListOrders(t *testing.T) {
 		require.NoErrorf(err, "expect no error, received %s", err)
 	}
 	lrd, err := repo.ListOrders(&order.ListParameters{Limit: 4})
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	require.Len(lrd, 5, "should match the provided limit number + 1")
 	for _, order := range lrd {
-		assert.Equal("FedEx", order.Courier, "should match the courier")
-		assert.NotEmpty(order.Key, "should not have empty key/id")
+		require.Equal("FedEx", order.Courier, "should match the courier")
+		require.NotEmpty(order.Key, "should not have empty key/id")
 	}
-	assert.NotEqual(
+	require.NotEqual(
 		lrd[0].Consumer,
 		lrd[1].Consumer,
 		"should have different consumers",
 	)
 	ti := toTimestamp(lrd[len(lrd)-1].CreatedAt)
 	lo2, err := repo.ListOrders(&order.ListParameters{Cursor: ti, Limit: 4})
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(lo2, 5, "should match the provided limit number + 1")
-	assert.NotEqual(
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.Len(lo2, 5, "should match the provided limit number + 1")
+	require.NotEqual(
 		lo2[0].Consumer,
 		lo2[1].Consumer,
 		"should have different consumers",
 	)
 	ti2 := toTimestamp(lo2[len(lo2)-1].CreatedAt)
 	lo3, err := repo.ListOrders(&order.ListParameters{Cursor: ti2, Limit: 4})
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(lo3, 5, "should match the provided limit number + 1")
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.Len(lo3, 5, "should match the provided limit number + 1")
 	ti3 := toTimestamp(lo3[len(lo3)-1].CreatedAt)
 	lo4, err := repo.ListOrders(&order.ListParameters{Cursor: ti3, Limit: 4})
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	// Depends on how the timestamps of individual element is created,
 	// the query can fetch three or more elements. Since it's going
 	// towards the end of the list, the returned element number varies
 	// depending on which particular index in the list it matches
-	assert.GreaterOrEqual(
+	require.GreaterOrEqual(
 		len(lo4),
 		3,
 		"should at least bring last three results",
@@ -405,26 +415,25 @@ func TestListOrders(t *testing.T) {
 		Filter: convertFilterToQuery("courier===FedEx"),
 	})
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(sfd, 15, "should list all 15 orders")
+	require.Len(sfd, 15, "should list all 15 orders")
 	scd, err := repo.ListOrders(&order.ListParameters{
 		Cursor: toTimestamp(sfd[5].CreatedAt),
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===FedEx"),
 	})
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.GreaterOrEqual(len(scd), 10, "should list at least last 10 orders")
+	require.GreaterOrEqual(len(scd), 10, "should list at least last 10 orders")
 	snd, err := repo.ListOrders(&order.ListParameters{
 		Cursor: toTimestamp(sfd[5].CreatedAt),
 		Limit:  100,
 		Filter: convertFilterToQuery("courier===UPS"),
 	})
 	require.NoErrorf(err, "expect no error, received %s", err)
-	assert.Empty(snd, "should list last no UPS orders")
+	require.Empty(snd, "should list last no UPS orders")
 }
 
 func TestLoadOrder(t *testing.T) {
 	t.Parallel()
-	assert := assert.New(t)
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -443,24 +452,24 @@ func TestLoadOrder(t *testing.T) {
 		},
 	}
 	mrd, err := repo.LoadOrder(eod)
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.True(mrd.CreatedAt.Equal(tme), "should match created_at")
-	assert.True(mrd.UpdatedAt.Equal(tme), "should match updated_at")
-	assert.Equal(
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.True(mrd.CreatedAt.Equal(tme), "should match created_at")
+	require.True(mrd.UpdatedAt.Equal(tme), "should match updated_at")
+	require.Equal(
 		mrd.Purchaser,
 		eod.Data.Attributes.Purchaser,
 		"should match the purchaser",
 	)
-	assert.ElementsMatch(
+	require.ElementsMatch(
 		mrd.Items,
 		eod.Data.Attributes.Items,
 		"should match the items",
 	)
-	assert.NotEmpty(mrd.Key, "should not have empty key/id")
+	require.NotEmpty(mrd.Key, "should not have empty key/id")
 }
 
+//nolint:paralleltest
 func TestClearOrders(t *testing.T) {
-	assert := assert.New(t)
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
@@ -475,18 +484,18 @@ func TestClearOrders(t *testing.T) {
 			fmt.Sprintf("%s@kramericaindustries.com", RandString(10)),
 		)
 		_, err = repo.AddOrder(no)
-		assert.NoErrorf(err, "expect no error, received %s", err)
+		require.NoErrorf(err, "expect no error, received %s", err)
 	}
 	lo, err := repo.ListOrders(&order.ListParameters{Limit: 100})
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Len(
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.Len(
 		lo,
 		15,
 		"should have exactly 15 orders after adding them to a cleared collection",
 	)
 	err = repo.ClearOrders()
-	assert.NoErrorf(err, "expect no error, received %s", err)
+	require.NoErrorf(err, "expect no error, received %s", err)
 	lo2, err := repo.ListOrders(&order.ListParameters{Limit: 100})
-	assert.NoErrorf(err, "expect no error, received %s", err)
-	assert.Empty(lo2, "should not list any orders after final clear")
+	require.NoErrorf(err, "expect no error, received %s", err)
+	require.Empty(lo2, "should not list any orders after final clear")
 }
