@@ -51,7 +51,6 @@ linters:
     - gosimple
     - govet
     - gocognit
-    - gomnd 
     - gomoddirectives
     - gomodguard
     - grouper
@@ -63,10 +62,9 @@ linters:
     - nakedret
     - nestif
     - nilerr
-    - nlreturn
     - nolintlint
     - prealloc
-    # - paralleltest
+    - paralleltest
     - predeclared
     - revive
     - rowserrcheck
@@ -75,6 +73,7 @@ linters:
     - unconvert
     - thelper
     - tparallel
+    - testifylint
     - unparam
     - unused
     - unconvert
