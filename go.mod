@@ -1,7 +1,7 @@
 module github.com/dictyBase/modware-order
 
 require (
-	github.com/arangodb/go-driver v1.6.2
+	github.com/arangodb/go-driver v1.6.6
 	github.com/dictyBase/aphgrpc v1.4.2
 	github.com/dictyBase/apihelpers v0.0.0-20191119134328-9ff59ee4c896
 	github.com/dictyBase/arangomanager v0.4.0
@@ -36,7 +36,7 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
