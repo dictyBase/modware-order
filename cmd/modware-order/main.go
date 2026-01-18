@@ -1,3 +1,4 @@
+// Package main provides the entry point for the modware-order microservice.
 package main
 
 import (
@@ -43,7 +44,7 @@ func main() {
 }
 
 func serverFlags() []cli.Flag {
-	flg := make([]cli.Flag, 0)
+	flg := make([]cli.Flag, 0, 10)
 	flg = append(flg, arango.ArangoFlags()...)
 	flg = append(flg, aphgrpc.NatsFlag()...)
 	flg = append(flg, []cli.Flag{

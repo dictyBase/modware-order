@@ -1,3 +1,4 @@
+// Package nats provides NATS-based message publisher implementation.
 package nats
 
 import (
@@ -6,13 +7,14 @@ import (
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/message"
 	gnats "github.com/nats-io/nats.go"
-	"github.com/nats-io/nats.go/encoders/protobuf"
+	"google.golang.org/protobuf/proto"
 )
 
 type natsPublisher struct {
-	econn *gnats.EncodedConn
+	conn *gnats.Conn
 }
 
+// NewPublisher creates a new NATS publisher instance connected to the specified host and port.
 func NewPublisher(
 	host, port string,
 	options ...gnats.Option,
@@ -26,19 +28,16 @@ func NewPublisher(
 			err,
 		)
 	}
-	enc, err := gnats.NewEncodedConn(ntc, protobuf.PROTOBUF_ENCODER)
-	if err != nil {
-		return &natsPublisher{}, fmt.Errorf(
-			"error in connecting to nats server %s",
-			err,
-		)
-	}
 
-	return &natsPublisher{econn: enc}, nil
+	return &natsPublisher{conn: ntc}, nil
 }
 
 func (n *natsPublisher) Publish(subj string, ord *order.Order) error {
-	err := n.econn.Publish(subj, ord)
+	data, err := proto.Marshal(ord)
+	if err != nil {
+		return fmt.Errorf("error marshaling order: %s", err)
+	}
+	err = n.conn.Publish(subj, data)
 	if err != nil {
 		return fmt.Errorf("error in publishing to nats server %s", err)
 	}
@@ -47,7 +46,7 @@ func (n *natsPublisher) Publish(subj string, ord *order.Order) error {
 }
 
 func (n *natsPublisher) Close() error {
-	n.econn.Close()
+	n.conn.Close()
 
 	return nil
 }
