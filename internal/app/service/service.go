@@ -12,7 +12,7 @@ import (
 	"github.com/dictyBase/modware-order/internal/model"
 	"github.com/dictyBase/modware-order/internal/repository"
 	"github.com/dictyBase/modware-order/internal/repository/arangodb"
-	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const Divider = 1000000
@@ -293,9 +293,9 @@ func (s *OrderService) LoadOrder(
 // PrepareForOrder clears the database to prepare for loading data.
 func (s *OrderService) PrepareForOrder(
 	ctx context.Context,
-	rmt *empty.Empty,
-) (*empty.Empty, error) {
-	e := &empty.Empty{}
+	rmt *emptypb.Empty,
+) (*emptypb.Empty, error) {
+	e := &emptypb.Empty{}
 	if err := s.repo.ClearOrders(); err != nil {
 		return e, aphgrpc.HandleGenericError(ctx, err)
 	}
