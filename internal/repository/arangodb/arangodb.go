@@ -1,3 +1,4 @@
+// Package arangodb provides ArangoDB implementation of the order repository.
 package arangodb
 
 import (

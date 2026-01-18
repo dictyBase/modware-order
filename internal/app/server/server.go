@@ -1,3 +1,4 @@
+// Package server provides the gRPC server implementation for the order service.
 package server
 
 import (
@@ -24,6 +25,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+// ExitNo is the exit code used when the server encounters an error.
 const ExitNo = 2
 
 func createOrderRepo(clt *cli.Context) (repository.OrderRepository, error) {

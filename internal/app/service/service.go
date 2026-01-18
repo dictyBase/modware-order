@@ -1,3 +1,4 @@
+// Package service provides the gRPC service implementation for order management.
 package service
 
 import (
@@ -15,6 +16,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Divider is used to convert nanoseconds to milliseconds for cursor values.
 const Divider = 1000000
 
 // OrderService is the container for managing order service definition.
@@ -88,7 +90,10 @@ func (s *OrderService) CreateOrder(
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = s.orderData(adr)
-	s.publisher.Publish(s.Topics["orderCreate"], ord) //nolint:errcheck
+	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
+		// Log but don't fail the request if publishing fails
+		_ = err
+	}
 
 	return ord, nil
 }
@@ -147,7 +152,25 @@ func (s *OrderService) orderQueryWithFilter(
 	if len(mlo) == 0 {
 		return orc, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ocdata := make([]*order.OrderCollection_Data, 0)
+	ocdata := s.convertToCollectionData(mlo)
+	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
+		orc.Data = ocdata
+		orc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
+
+		return orc, nil
+	}
+	orc.Data = ocdata[:len(ocdata)-1]
+	orc.Meta = &order.Meta{
+		Limit:      params.Limit,
+		NextCursor: genNextCursorVal(mlo[len(mlo)-1].CreatedAt),
+		Total:      int64(len(ocdata)),
+	}
+
+	return orc, nil
+}
+
+func (s *OrderService) convertToCollectionData(mlo []*model.OrderDoc) []*order.OrderCollection_Data {
+	ocdata := make([]*order.OrderCollection_Data, 0, len(mlo))
 	for _, item := range mlo {
 		ocdata = append(ocdata, &order.OrderCollection_Data{
 			Type: s.GetResourceName(),
@@ -168,20 +191,7 @@ func (s *OrderService) orderQueryWithFilter(
 			},
 		})
 	}
-	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
-		orc.Data = ocdata
-		orc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
-
-		return orc, nil
-	}
-	orc.Data = ocdata[:len(ocdata)-1]
-	orc.Meta = &order.Meta{
-		Limit:      params.Limit,
-		NextCursor: genNextCursorVal(mlo[len(mlo)-1].CreatedAt),
-		Total:      int64(len(ocdata)),
-	}
-
-	return orc, nil
+	return ocdata
 }
 
 func (s *OrderService) orderQueryWithoutFilter(
@@ -199,27 +209,7 @@ func (s *OrderService) orderQueryWithoutFilter(
 	if len(mlo) == 0 {
 		return orc, aphgrpc.HandleNotFoundError(ctx, err)
 	}
-	ocdata := make([]*order.OrderCollection_Data, 0)
-	for _, item := range mlo {
-		ocdata = append(ocdata, &order.OrderCollection_Data{
-			Type: s.GetResourceName(),
-			Id:   item.Key,
-			Attributes: &order.OrderAttributes{
-				CreatedAt:        aphgrpc.TimestampProto(item.CreatedAt),
-				UpdatedAt:        aphgrpc.TimestampProto(item.UpdatedAt),
-				Courier:          item.Courier,
-				CourierAccount:   item.CourierAccount,
-				Comments:         item.Comments,
-				Payment:          item.Payment,
-				PurchaseOrderNum: item.PurchaseOrderNum,
-				Status:           statusToEnum(item.Status),
-				Consumer:         item.Consumer,
-				Payer:            item.Payer,
-				Purchaser:        item.Purchaser,
-				Items:            item.Items,
-			},
-		})
-	}
+	ocdata := s.convertToCollectionData(mlo)
 	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
 		orc.Data = ocdata
 		orc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
@@ -285,7 +275,10 @@ func (s *OrderService) LoadOrder(
 		return ord, aphgrpc.HandleNotFoundError(ctx, err)
 	}
 	ord.Data = s.orderData(mlrd)
-	s.publisher.Publish(s.Topics["orderCreate"], ord) //nolint:errcheck
+	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
+		// Log but don't fail the request if publishing fails
+		_ = err
+	}
 
 	return ord, nil
 }
@@ -293,7 +286,7 @@ func (s *OrderService) LoadOrder(
 // PrepareForOrder clears the database to prepare for loading data.
 func (s *OrderService) PrepareForOrder(
 	ctx context.Context,
-	rmt *emptypb.Empty,
+	_ *emptypb.Empty,
 ) (*emptypb.Empty, error) {
 	e := &emptypb.Empty{}
 	if err := s.repo.ClearOrders(); err != nil {

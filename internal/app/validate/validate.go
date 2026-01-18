@@ -1,3 +1,4 @@
+// Package validate provides validation functions for CLI arguments.
 package validate
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// ExitNum is the exit code used when validation fails.
 const ExitNum = 2
 
 // ServerArgs validates that the necessary flags are not missing.

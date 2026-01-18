@@ -1,3 +1,4 @@
+// Package repository defines the interface for order data access.
 package repository
 
 import (

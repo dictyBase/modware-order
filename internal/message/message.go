@@ -1,3 +1,4 @@
+// Package message provides interfaces for message publishing.
 package message
 
 import (
