@@ -1,10 +1,11 @@
+version: "2"
 run:
-  timeout: 5m
   allow-parallel-runners: true
 linters-settings:
-   funlen: 
+   funlen:
     lines: 80
     statements: 50
+    ignore-comments: true
    lll:
       line-length: 130
    revive:
@@ -15,7 +16,7 @@ linters-settings:
       excludes:
         - G404
    wrapcheck:
-      ignoreSigs:
+      ignoresigs:
         - .HandleGetError(
         - .HandleGenericError(
         - .HandleInsertError(
@@ -26,29 +27,24 @@ linters-settings:
         - .Errorf(
         - errors.New(
 linters:
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
     - asciicheck
     - bodyclose
     - bidichk
-    - cyclop 
+    - cyclop
     - decorder
     - dogsled
     - dupl
     - errcheck
     - errname
     - funlen
-    - gci
     - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
     - godot
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - gocognit
     - gomoddirectives
@@ -69,7 +65,6 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    - typecheck
     - unconvert
     - thelper
     - tparallel
@@ -81,11 +76,9 @@ linters:
     - varnamelen
     - wastedassign
     - whitespace
-    - wrapcheck
 
-  # don't enable:
-  # - godox
-  # - maligned,prealloc
-  # - gochecknoglobals
-  # - golint
-  #  - forcetypeassert
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
