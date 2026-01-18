@@ -23,7 +23,7 @@ const (
 
 var (
 	// Weak RNG acceptable for test data.
-	seedRand   *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) //nolint:gosec
+	seedRand   = rand.New(rand.NewSource(time.Now().UnixNano())) //nolint:gosec
 	gta        *testarango.TestArango
 	collection = "stock_orders"
 )
