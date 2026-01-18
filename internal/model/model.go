@@ -1,3 +1,4 @@
+// Package model defines data structures for order management.
 package model
 
 import (

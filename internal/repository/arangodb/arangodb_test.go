@@ -22,7 +22,8 @@ const (
 )
 
 var (
-	seedRand   *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	// Weak RNG acceptable for test data.
+	seedRand   *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) //nolint:gosec
 	gta        *testarango.TestArango
 	collection = "stock_orders"
 )
@@ -196,7 +197,7 @@ func TestAddOrder(t *testing.T) {
 	require.NotEmpty(mro.Key, "should not have empty key/id")
 }
 
-func TestGetOrder(t *testing.T) {
+func TestGetOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 	t.Parallel()
 	connP := getConnectParams()
 	require := require.New(t)
@@ -274,7 +275,7 @@ func TestGetOrder(t *testing.T) {
 	require.True(nre.NotFound, "entry should not exist")
 }
 
-func TestEditOrder(t *testing.T) {
+func TestEditOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 	t.Parallel()
 	require := require.New(t)
 	connP := getConnectParams()
@@ -356,7 +357,7 @@ func TestEditOrder(t *testing.T) {
 	require.True(ee.NotFound, "entry should not exist")
 }
 
-func TestListOrders(t *testing.T) { //nolint:paralleltest
+func TestListOrders(t *testing.T) { //nolint:paralleltest,funlen // Test functions can be long
 	require := require.New(t)
 	connP := getConnectParams()
 	repo, err := NewOrderRepo(connP, collection)
