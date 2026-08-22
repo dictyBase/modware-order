@@ -9,7 +9,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/nats-io/nats.go v1.53.1
 	github.com/sirupsen/logrus v1.10.1
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli v1.22.17
 	google.golang.org/grpc v1.83.1
 	google.golang.org/protobuf v1.36.12
@@ -47,6 +47,7 @@ require (
 	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
@@ -56,7 +57,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	gopkg.in/mgutz/dat.v2 v2.0.0-20171004160617-d76e4f81c4ef // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 go 1.25.0
