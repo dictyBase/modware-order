@@ -86,6 +86,12 @@ func (s *OrderService) CreateOrder(
 	if err := rdr.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
+	if rdr.Data == nil || rdr.Data.Attributes == nil {
+		return ord, aphgrpc.HandleInvalidParamError(
+			ctx,
+			errors.New("expect order attributes"),
+		)
+	}
 	adr, err := s.repo.AddOrder(rdr)
 	if err != nil {
 		return ord, aphgrpc.HandleInsertError(ctx, err)
@@ -99,7 +105,17 @@ func (s *OrderService) CreateOrder(
 			),
 		)
 	}
-	ord.Data = s.orderData(adr)
+	return s.publishCreatedOrder(ctx, adr)
+}
+
+// publishCreatedOrder maps a stored document and announces it on the
+// create topic, which both order creating RPCs share.
+func (s *OrderService) publishCreatedOrder(
+	ctx context.Context,
+	mord *model.OrderDoc,
+) (*order.Order, error) {
+	ord := &order.Order{}
+	ord.Data = s.orderData(mord)
 	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
 		return ord, aphgrpc.HandleMessagingPubError(ctx, err)
 	}
@@ -115,6 +131,12 @@ func (s *OrderService) UpdateOrder(
 	ord := &order.Order{}
 	if err := urd.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
+	}
+	if urd.Data == nil || urd.Data.Attributes == nil {
+		return ord, aphgrpc.HandleInvalidParamError(
+			ctx,
+			errors.New("expect order attributes"),
+		)
 	}
 	mord, err := s.repo.EditOrder(urd)
 	if err != nil {
@@ -170,17 +192,23 @@ func (s *OrderService) orderQueryWithFilter(
 		)
 	}
 	ocdata := s.convertToCollectionData(mlo)
-	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
+	// the repository peeks one row beyond the limit to reveal whether
+	// another page follows, so a page short of that peek row is the last
+	// one
+	if len(ocdata) <= int(params.Limit) {
 		orc.Data = ocdata
-		orc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
+		orc.Meta = &order.Meta{
+			Limit: params.Limit,
+			Total: int64(len(orc.Data)),
+		}
 
 		return orc, nil
 	}
-	orc.Data = ocdata[:len(ocdata)-1]
+	orc.Data = ocdata[:int(params.Limit)]
 	orc.Meta = &order.Meta{
 		Limit:      params.Limit,
 		NextCursor: genNextCursorVal(mlo[len(mlo)-1].CreatedAt),
-		Total:      int64(len(ocdata)),
+		Total:      int64(len(orc.Data)),
 	}
 
 	return orc, nil
@@ -232,17 +260,23 @@ func (s *OrderService) orderQueryWithoutFilter(
 		)
 	}
 	ocdata := s.convertToCollectionData(mlo)
-	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
+	// the repository peeks one row beyond the limit to reveal whether
+	// another page follows, so a page short of that peek row is the last
+	// one
+	if len(ocdata) <= int(params.Limit) {
 		orc.Data = ocdata
-		orc.Meta = &order.Meta{Limit: params.Limit, Total: int64(len(ocdata))}
+		orc.Meta = &order.Meta{
+			Limit: params.Limit,
+			Total: int64(len(orc.Data)),
+		}
 
 		return orc, nil
 	}
-	orc.Data = ocdata[:len(ocdata)-1]
+	orc.Data = ocdata[:int(params.Limit)]
 	orc.Meta = &order.Meta{
 		Limit:      params.Limit,
 		NextCursor: genNextCursorVal(mlo[len(mlo)-1].CreatedAt),
-		Total:      int64(len(ocdata)),
+		Total:      int64(len(orc.Data)),
 	}
 
 	return orc, nil
@@ -289,6 +323,12 @@ func (s *OrderService) LoadOrder(
 	if err := rxo.Validate(); err != nil {
 		return ord, aphgrpc.HandleInvalidParamError(ctx, err)
 	}
+	if rxo.Data == nil || rxo.Data.Attributes == nil {
+		return ord, aphgrpc.HandleInvalidParamError(
+			ctx,
+			errors.New("expect order attributes"),
+		)
+	}
 	mlrd, err := s.repo.LoadOrder(rxo)
 	if err != nil {
 		return ord, aphgrpc.HandleInsertError(ctx, err)
@@ -302,12 +342,7 @@ func (s *OrderService) LoadOrder(
 			),
 		)
 	}
-	ord.Data = s.orderData(mlrd)
-	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
-		return ord, aphgrpc.HandleMessagingPubError(ctx, err)
-	}
-
-	return ord, nil
+	return s.publishCreatedOrder(ctx, mlrd)
 }
 
 // PrepareForOrder clears the database to prepare for loading data.
