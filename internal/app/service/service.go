@@ -3,10 +3,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/dictyBase/apihelpers/aphgrpc"
+	"github.com/dictyBase/aphgrpc"
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/message"
@@ -66,7 +67,10 @@ func (s *OrderService) GetOrder(
 		return ord, aphgrpc.HandleGetError(ctx, err)
 	}
 	if mord.NotFound {
-		return ord, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(
+			ctx,
+			fmt.Errorf("could not find order with ID %s", rdr.Id),
+		)
 	}
 	ord.Data = s.orderData(mord)
 
@@ -87,12 +91,17 @@ func (s *OrderService) CreateOrder(
 		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
 	if adr.NotFound {
-		return ord, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(
+			ctx,
+			fmt.Errorf(
+				"could not create order for purchaser %s",
+				rdr.Data.Attributes.Purchaser,
+			),
+		)
 	}
 	ord.Data = s.orderData(adr)
 	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
-		// Log but don't fail the request if publishing fails
-		_ = err
+		return ord, aphgrpc.HandleMessagingPubError(ctx, err)
 	}
 
 	return ord, nil
@@ -112,10 +121,15 @@ func (s *OrderService) UpdateOrder(
 		return ord, aphgrpc.HandleUpdateError(ctx, err)
 	}
 	if mord.NotFound {
-		return ord, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(
+			ctx,
+			fmt.Errorf("could not find order with ID %s", urd.Data.Id),
+		)
 	}
 	ord.Data = s.orderData(mord)
-	s.publisher.Publish(s.Topics["orderUpdate"], ord) //nolint
+	if err := s.publisher.Publish(s.Topics["orderUpdate"], ord); err != nil {
+		return ord, aphgrpc.HandleMessagingPubError(ctx, err)
+	}
 
 	return ord, nil
 }
@@ -150,7 +164,10 @@ func (s *OrderService) orderQueryWithFilter(
 		return orc, aphgrpc.HandleGetError(ctx, err)
 	}
 	if len(mlo) == 0 {
-		return orc, aphgrpc.HandleNotFoundError(ctx, err)
+		return orc, aphgrpc.HandleNotFoundError(
+			ctx,
+			errors.New("could not find any orders"),
+		)
 	}
 	ocdata := s.convertToCollectionData(mlo)
 	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
@@ -209,7 +226,10 @@ func (s *OrderService) orderQueryWithoutFilter(
 		return orc, aphgrpc.HandleGetError(ctx, err)
 	}
 	if len(mlo) == 0 {
-		return orc, aphgrpc.HandleNotFoundError(ctx, err)
+		return orc, aphgrpc.HandleNotFoundError(
+			ctx,
+			errors.New("could not find any orders"),
+		)
 	}
 	ocdata := s.convertToCollectionData(mlo)
 	if len(ocdata) < int(params.Limit)-2 { // fewer results than limit
@@ -233,28 +253,28 @@ func (s *OrderService) ListOrders(
 	ctx context.Context,
 	params *order.ListParameters,
 ) (*order.OrderCollection, error) {
-	orc := &order.OrderCollection{}
+	var (
+		orc *order.OrderCollection
+		err error
+	)
 	lmt := params.Limit
 	if params.Limit == 0 {
 		lmt = 10
 	}
 	if len(params.Filter) > 0 {
-		orc, err := s.orderQueryWithFilter(ctx, &order.ListParameters{
+		orc, err = s.orderQueryWithFilter(ctx, &order.ListParameters{
 			Limit:  lmt,
 			Cursor: params.Cursor,
 			Filter: params.Filter,
 		})
-		if err != nil {
-			return orc, err
-		}
 	} else {
-		orc, err := s.orderQueryWithoutFilter(ctx, &order.ListParameters{
+		orc, err = s.orderQueryWithoutFilter(ctx, &order.ListParameters{
 			Limit:  lmt,
 			Cursor: params.Cursor,
 		})
-		if err != nil {
-			return orc, err
-		}
+	}
+	if err != nil {
+		return orc, err
 	}
 
 	return orc, nil
@@ -274,12 +294,17 @@ func (s *OrderService) LoadOrder(
 		return ord, aphgrpc.HandleInsertError(ctx, err)
 	}
 	if mlrd.NotFound {
-		return ord, aphgrpc.HandleNotFoundError(ctx, err)
+		return ord, aphgrpc.HandleNotFoundError(
+			ctx,
+			fmt.Errorf(
+				"could not find order for purchaser %s",
+				rxo.Data.Attributes.Purchaser,
+			),
+		)
 	}
 	ord.Data = s.orderData(mlrd)
 	if err := s.publisher.Publish(s.Topics["orderCreate"], ord); err != nil {
-		// Log but don't fail the request if publishing fails
-		_ = err
+		return ord, aphgrpc.HandleMessagingPubError(ctx, err)
 	}
 
 	return ord, nil
