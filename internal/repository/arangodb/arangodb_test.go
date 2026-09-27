@@ -9,7 +9,7 @@ import (
 	"time"
 
 	driver "github.com/arangodb/go-driver"
-	"github.com/dictyBase/apihelpers/aphgrpc"
+	"github.com/dictyBase/aphgrpc"
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/arangomanager/testarango"

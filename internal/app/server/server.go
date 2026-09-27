@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dictyBase/apihelpers/aphgrpc"
+	"github.com/dictyBase/aphgrpc"
 	manager "github.com/dictyBase/arangomanager"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
 	"github.com/dictyBase/modware-order/internal/app/service"
