@@ -50,7 +50,7 @@ func NewOrderRepo(
 // GetOrder retrieves stock order from database.
 func (ar *arangorepository) GetOrder(id string) (*model.OrderDoc, error) {
 	mdl := &model.OrderDoc{}
-	bindVars := map[string]interface{}{
+	bindVars := map[string]any{
 		"@stock_order_collection": ar.sorder.Name(),
 		"key":                     id,
 	}
@@ -75,7 +75,7 @@ func (ar *arangorepository) AddOrder(
 	no *order.NewOrder,
 ) (*model.OrderDoc, error) {
 	mdl := &model.OrderDoc{}
-	var bindVars map[string]interface{}
+	var bindVars map[string]any
 	attr := no.Data.Attributes
 	bindVars = addableOrderBindParams(attr)
 	bindVars["@stock_order_collection"] = ar.sorder.Name()
@@ -215,10 +215,10 @@ func (ar *arangorepository) LoadOrder(
 
 func getUpdatableBindParams(
 	attr *order.OrderUpdateAttributes,
-) map[string]interface{} {
-	bindVars := make(map[string]interface{})
+) map[string]any {
+	bindVars := make(map[string]any)
 	if len(attr.Courier) > 0 {
-		bindVars["courier"] = attr.Courier
+		bindVars[fieldCourier] = attr.Courier
 	}
 	if len(attr.CourierAccount) > 0 {
 		bindVars["courier_account"] = attr.CourierAccount
@@ -227,14 +227,14 @@ func getUpdatableBindParams(
 		bindVars["comments"] = attr.Comments
 	}
 	if len(attr.Payment) > 0 {
-		bindVars["payment"] = attr.Payment
+		bindVars[fieldPayment] = attr.Payment
 	}
 	if len(attr.PurchaseOrderNum) > 0 {
 		bindVars["purchase_order_num"] = attr.PurchaseOrderNum
 	}
-	bindVars["status"] = attr.Status.String()
+	bindVars[fieldStatus] = attr.Status.String()
 	if len(attr.Items) > 0 {
-		bindVars["items"] = attr.Items
+		bindVars[fieldItems] = attr.Items
 	}
 
 	return bindVars
@@ -251,31 +251,31 @@ func (ar *arangorepository) ClearOrders() error {
 
 func addableOrderBindParams(
 	attr *order.NewOrderAttributes,
-) map[string]interface{} {
-	return map[string]interface{}{
-		"courier":            attr.Courier,
+) map[string]any {
+	return map[string]any{
+		fieldCourier:         attr.Courier,
 		"courier_account":    attr.CourierAccount,
 		"comments":           normalizeStrBindParam(attr.Comments),
-		"payment":            attr.Payment,
+		fieldPayment:         attr.Payment,
 		"purchase_order_num": attr.PurchaseOrderNum,
-		"status":             attr.Status.String(),
+		fieldStatus:          attr.Status.String(),
 		"consumer":           attr.Consumer,
 		"payer":              attr.Payer,
 		"purchaser":          attr.Purchaser,
-		"items":              attr.Items,
+		fieldItems:           attr.Items,
 	}
 }
 
 func existingOrderBindParams(
 	attr *order.ExistingOrderAttributes,
-) map[string]interface{} {
+) map[string]any {
 	ctime := attr.CreatedAt.AsTime().Format(time.RFC3339)
 
-	return map[string]interface{}{
-		"created_at": ctime,
-		"updated_at": ctime,
-		"purchaser":  attr.Purchaser,
-		"items":      attr.Items,
+	return map[string]any{
+		fieldCreatedAt: ctime,
+		fieldUpdatedAt: ctime,
+		"purchaser":    attr.Purchaser,
+		fieldItems:     attr.Items,
 	}
 }
 
