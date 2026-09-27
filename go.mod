@@ -59,4 +59,4 @@ require (
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )
 
-go 1.25.0
+go 1.26.0

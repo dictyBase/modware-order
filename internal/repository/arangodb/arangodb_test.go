@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	charSet      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	orderDocType = "order"
 )
 
 var (
@@ -29,12 +30,9 @@ var (
 )
 
 func stringWithCharset(length int, charset string) string {
-	var byt []byte
-	for i := 0; i < length; i++ {
-		byt = append(
-			byt,
-			charset[seedRand.Intn(len(charset))],
-		)
+	byt := make([]byte, length)
+	for i := range length {
+		byt[i] = charset[seedRand.Intn(len(charset))]
 	}
 
 	return string(byt)
@@ -83,7 +81,7 @@ func toTimestamp(t time.Time) int64 {
 func newTestOrder(consumer string) *order.NewOrder {
 	return &order.NewOrder{
 		Data: &order.NewOrder_Data{
-			Type: "order",
+			Type: orderDocType,
 			Attributes: &order.NewOrderAttributes{
 				Courier:          "FedEx",
 				CourierAccount:   "9912378999",
@@ -286,7 +284,7 @@ func TestEditOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 	mrd, err := repo.AddOrder(no)
 	require.NoErrorf(err, "expect no error, received %s", err)
 	testData := &order.OrderUpdate{Data: &order.OrderUpdate_Data{
-		Type: "order",
+		Type: orderDocType,
 		Id:   mrd.Key,
 		Attributes: &order.OrderUpdateAttributes{
 			Courier:          "UPS",
@@ -345,7 +343,7 @@ func TestEditOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 	require.Equal(edr.Courier, grd.Courier, "should match the new courier")
 	oed := &order.OrderUpdate{
 		Data: &order.OrderUpdate_Data{
-			Type: "order",
+			Type: orderDocType,
 			Id:   "1",
 			Attributes: &order.OrderUpdateAttributes{
 				Comments: "This is an updated test comment",
@@ -443,7 +441,7 @@ func TestLoadOrder(t *testing.T) {
 	tme, _ := time.Parse("2006-01-02 15:04:05", "2010-03-30 14:40:58")
 	eod := &order.ExistingOrder{
 		Data: &order.ExistingOrder_Data{
-			Type: "order",
+			Type: orderDocType,
 			Attributes: &order.ExistingOrderAttributes{
 				CreatedAt: aphgrpc.TimestampProto(tme),
 				UpdatedAt: aphgrpc.TimestampProto(tme),
