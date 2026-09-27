@@ -13,6 +13,8 @@ const (
 			status: @status,
 			consumer: @consumer,
 			payer: @payer,
+			consumer_info: @consumer_info,
+			payer_info: @payer_info,
 			purchaser: @purchaser,
 			items: @items
 		} INTO @@stock_order_collection RETURN NEW

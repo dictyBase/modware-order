@@ -188,6 +188,8 @@ func (s *OrderService) convertToCollectionData(mlo []*model.OrderDoc) []*order.O
 				Payer:            item.Payer,
 				Purchaser:        item.Purchaser,
 				Items:            item.Items,
+				ConsumerInfo:     modelToProtoUserInfo(item.ConsumerInfo),
+				PayerInfo:        modelToProtoUserInfo(item.PayerInfo),
 			},
 		})
 	}
@@ -313,7 +315,30 @@ func (s *OrderService) orderData(ord *model.OrderDoc) *order.Order_Data {
 			Payer:            ord.Payer,
 			Purchaser:        ord.Purchaser,
 			Items:            ord.Items,
+			ConsumerInfo:     modelToProtoUserInfo(ord.ConsumerInfo),
+			PayerInfo:        modelToProtoUserInfo(ord.PayerInfo),
 		},
+	}
+}
+
+// modelToProtoUserInfo converts a stored user profile into its proto
+// representation, returning nil for an absent profile.
+func modelToProtoUserInfo(info *model.UserInfo) *order.UserInfo {
+	if info == nil {
+		return nil
+	}
+
+	return &order.UserInfo{
+		FirstName:     info.FirstName,
+		LastName:      info.LastName,
+		Organization:  info.Organization,
+		FirstAddress:  info.FirstAddress,
+		SecondAddress: info.SecondAddress,
+		City:          info.City,
+		State:         info.State,
+		Zipcode:       info.Zipcode,
+		Country:       info.Country,
+		Phone:         info.Phone,
 	}
 }
 

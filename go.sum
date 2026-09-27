@@ -40,8 +40,8 @@ github.com/dictyBase/apihelpers v0.0.0-20191119134328-9ff59ee4c896/go.mod h1:3q5
 github.com/dictyBase/arangomanager v0.8.0 h1:wXWmq7QYBn37eGs0nELPxqccMbTvx9G99k/crHwfDAw=
 github.com/dictyBase/arangomanager v0.8.0/go.mod h1:Fm3AuYBeMccsYcu8M6iq2a96XlPIe4Y55x95TAWmGs4=
 github.com/dictyBase/go-genproto v0.0.0-20190419013406-7b67707bd07a/go.mod h1:uvt0ErfvhRMAzfRo4y/99/XVhM1EduGOLxTZ9SYetRY=
-github.com/dictyBase/go-genproto v0.0.0-20250812211349-c01bdbe25058 h1:+tJZbSiQi6XfhbRSHDFT9uue0x37SW4hOh7ypD0OQaM=
-github.com/dictyBase/go-genproto v0.0.0-20250812211349-c01bdbe25058/go.mod h1:rlUPhBs4duDUE73MswuLGW9UzbkcTWqQsbpsp/pGqTg=
+github.com/dictyBase/go-genproto v0.0.0-20260927130607-790d7e125bc5 h1:EJeHF9oMa2CvGXD5dZKkSqxnt2OwsHC484S3tdWNqG4=
+github.com/dictyBase/go-genproto v0.0.0-20260927130607-790d7e125bc5/go.mod h1:rlUPhBs4duDUE73MswuLGW9UzbkcTWqQsbpsp/pGqTg=
 github.com/dictyBase/go-middlewares v0.0.0-20180704154106-0fd6848b3e92/go.mod h1:DPbz2QP7K7kHh9pCuStlQ6qDEwYyUiWNS6WGCdgb3Nk=
 github.com/dictyBase/modware v0.0.0-20170217231152-2cb30c5dad06/go.mod h1:5UIC4wA98D3LXkV8EzGJtmxx+S1iMq54JfGvtpLVykQ=
 github.com/docker/distribution v2.7.1+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=

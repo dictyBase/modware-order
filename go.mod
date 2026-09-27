@@ -5,7 +5,7 @@ require (
 	github.com/dictyBase/aphgrpc v1.4.2
 	github.com/dictyBase/apihelpers v0.0.0-20191119134328-9ff59ee4c896
 	github.com/dictyBase/arangomanager v0.8.0
-	github.com/dictyBase/go-genproto v0.0.0-20250812211349-c01bdbe25058
+	github.com/dictyBase/go-genproto v0.0.0-20260927130607-790d7e125bc5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/nats-io/nats.go v1.54.0
 	github.com/sirupsen/logrus v1.10.2

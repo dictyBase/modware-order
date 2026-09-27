@@ -256,6 +256,7 @@ func addableOrderBindParams(
 		fieldCourier:         attr.Courier,
 		"courier_account":    attr.CourierAccount,
 		"comments":           normalizeStrBindParam(attr.Comments),
+		fieldConsumerInfo:    protoToModelUserInfo(attr.ConsumerInfo),
 		fieldPayment:         attr.Payment,
 		"purchase_order_num": attr.PurchaseOrderNum,
 		fieldStatus:          attr.Status.String(),
@@ -263,6 +264,29 @@ func addableOrderBindParams(
 		"payer":              attr.Payer,
 		"purchaser":          attr.Purchaser,
 		fieldItems:           attr.Items,
+		fieldPayerInfo:       protoToModelUserInfo(attr.PayerInfo),
+	}
+}
+
+// protoToModelUserInfo converts a proto user profile into its storage
+// representation, returning nil for an absent profile so the document
+// field stores null.
+func protoToModelUserInfo(info *order.UserInfo) *model.UserInfo {
+	if info == nil {
+		return nil
+	}
+
+	return &model.UserInfo{
+		FirstName:     info.GetFirstName(),
+		LastName:      info.GetLastName(),
+		Organization:  info.GetOrganization(),
+		FirstAddress:  info.GetFirstAddress(),
+		SecondAddress: info.GetSecondAddress(),
+		City:          info.GetCity(),
+		State:         info.GetState(),
+		Zipcode:       info.GetZipcode(),
+		Country:       info.GetCountry(),
+		Phone:         info.GetPhone(),
 	}
 }
 

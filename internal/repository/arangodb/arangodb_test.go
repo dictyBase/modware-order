@@ -78,6 +78,21 @@ func toTimestamp(t time.Time) int64 {
 	return t.UnixNano() / 1000000
 }
 
+func newTestUserInfo(name string) *order.UserInfo {
+	return &order.UserInfo{
+		FirstName:     name,
+		LastName:      "Vandelay",
+		Organization:  "Vandelay Industries",
+		FirstAddress:  "134A Queens Blvd",
+		SecondAddress: "Suite 5",
+		City:          "New York",
+		State:         "NY",
+		Zipcode:       "11368",
+		Country:       "USA",
+		Phone:         "718-555-0199",
+	}
+}
+
 func newTestOrder(consumer string) *order.NewOrder {
 	return &order.NewOrder{
 		Data: &order.NewOrder_Data{
@@ -93,6 +108,8 @@ func newTestOrder(consumer string) *order.NewOrder {
 				Payer:            "dr.van.nostrand@gmail.com",
 				Purchaser:        "dr.van.nostrand@gmail.com",
 				Items:            []string{"DBS2109858", "DBP8349822"},
+				ConsumerInfo:     newTestUserInfo("art"),
+				PayerInfo:        newTestUserInfo("nostrand"),
 			},
 		},
 	}
@@ -132,7 +149,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAddOrder(t *testing.T) {
+func TestAddOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 	t.Parallel()
 	require := require.New(t)
 	connP := getConnectParams()
@@ -191,6 +208,16 @@ func TestAddOrder(t *testing.T) {
 		mro.Items,
 		ntr.Data.Attributes.Items,
 		"should match the items",
+	)
+	require.Equal(
+		mro.ConsumerInfo,
+		protoToModelUserInfo(ntr.Data.Attributes.ConsumerInfo),
+		"should match the consumer info",
+	)
+	require.Equal(
+		mro.PayerInfo,
+		protoToModelUserInfo(ntr.Data.Attributes.PayerInfo),
+		"should match the payer info",
 	)
 	require.NotEmpty(mro.Key, "should not have empty key/id")
 }
@@ -257,6 +284,16 @@ func TestGetOrder(t *testing.T) { //nolint:funlen // Test functions can be long
 		grd.Items,
 		nrd.Data.Attributes.Items,
 		"should match the items",
+	)
+	require.Equal(
+		grd.ConsumerInfo,
+		protoToModelUserInfo(nrd.Data.Attributes.ConsumerInfo),
+		"should match the consumer info",
+	)
+	require.Equal(
+		grd.PayerInfo,
+		protoToModelUserInfo(nrd.Data.Attributes.PayerInfo),
+		"should match the payer info",
 	)
 	require.Len(grd.Items, 2, "should match length of two items")
 	require.NotEmpty(grd.Key, "should not have empty key/id")
