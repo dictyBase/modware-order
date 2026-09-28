@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -156,6 +157,113 @@ func TestCreateOrderRejectsInvalidInput(t *testing.T) {
 		&order.NewOrder{Data: &order.NewOrder_Data{Type: orderResourceType}},
 	)
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
+}
+
+// newUserInfo builds a complete profile labelled with name, so a consumer
+// profile and a payer profile stay distinguishable in round-trip
+// assertions and a swap between the two cannot pass unnoticed.
+func newUserInfo(name string) *order.UserInfo {
+	return &order.UserInfo{
+		FirstName:     name,
+		LastName:      "Vandelay",
+		Organization:  "Vandelay Industries",
+		FirstAddress:  "129 West 81st Street",
+		SecondAddress: "Apt 5B",
+		City:          "New York",
+		State:         "NY",
+		Zipcode:       "10024",
+		Country:       "USA",
+		Phone:         "555-0100",
+	}
+}
+
+func TestCreateOrderPersistsUserInfo(t *testing.T) {
+	t.Parallel()
+	env := newArangoTestEnv(t)
+	consumer := newUserInfo("Art")
+	payer := newUserInfo("Nostrand")
+	input := newOrderInput()
+	input.Data.Attributes.ConsumerInfo = consumer
+	input.Data.Attributes.PayerInfo = payer
+	created, err := env.client.CreateOrder(context.Background(), input)
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	require.True(
+		t,
+		proto.Equal(consumer, created.Data.Attributes.ConsumerInfo),
+		"create response should carry the consumer profile",
+	)
+	require.True(
+		t,
+		proto.Equal(payer, created.Data.Attributes.PayerInfo),
+		"create response should carry the payer profile",
+	)
+	found, err := env.client.GetOrder(
+		context.Background(),
+		&order.OrderId{Id: created.Data.Id},
+	)
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	require.True(
+		t,
+		proto.Equal(consumer, found.Data.Attributes.ConsumerInfo),
+		"stored consumer profile should survive the round trip",
+	)
+	require.True(
+		t,
+		proto.Equal(payer, found.Data.Attributes.PayerInfo),
+		"stored payer profile should survive the round trip",
+	)
+}
+
+func TestCreateOrderPersistsPartialUserInfo(t *testing.T) {
+	t.Parallel()
+	env := newArangoTestEnv(t)
+	consumer := &order.UserInfo{City: "New York"}
+	input := newOrderInput()
+	input.Data.Attributes.ConsumerInfo = consumer
+	created, err := env.client.CreateOrder(context.Background(), input)
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	found, err := env.client.GetOrder(
+		context.Background(),
+		&order.OrderId{Id: created.Data.Id},
+	)
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	require.True(
+		t,
+		proto.Equal(consumer, found.Data.Attributes.ConsumerInfo),
+		"unset profile fields should stay empty, not inherit values",
+	)
+	require.Nil(
+		t,
+		found.Data.Attributes.PayerInfo,
+		"an absent payer profile should stay nil",
+	)
+}
+
+func TestCreateOrderWithoutUserInfoStoresNoProfiles(t *testing.T) {
+	t.Parallel()
+	env := newArangoTestEnv(t)
+	created, err := env.client.CreateOrder(context.Background(), newOrderInput())
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	require.Nil(
+		t,
+		created.Data.Attributes.ConsumerInfo,
+		"a create without profiles should not gain a consumer profile",
+	)
+	found, err := env.client.GetOrder(
+		context.Background(),
+		&order.OrderId{Id: created.Data.Id},
+	)
+	require.NoErrorf(t, err, "expect no error, received %s", err)
+	require.Nil(
+		t,
+		found.Data.Attributes.ConsumerInfo,
+		"a legacy order should not gain a consumer profile",
+	)
+	require.Nil(
+		t,
+		found.Data.Attributes.PayerInfo,
+		"a legacy order should not gain a payer profile",
+	)
 }
 
 func TestGetOrderReturnsStoredOrder(t *testing.T) {
