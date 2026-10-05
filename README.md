@@ -77,3 +77,5 @@ The protocol buffer definitions and service apis are documented
 ![Branches](https://badgen.net/github/branches/dictyBase/modware-order)
 ![Tags](https://badgen.net/github/tags/dictyBase/modware-order)  
 [![Lines of Code](https://badgen.net/codeclimate/loc/dictyBase/modware-order)](https://codeclimate.com/github/dictyBase/modware-order/code)  
+
+Deploy path: composite deploy with named just arguments (deploy refactor P0.2/P0.3).
