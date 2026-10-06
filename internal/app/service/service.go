@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/dictyBase/aphgrpc"
 	"github.com/dictyBase/arangomanager/query"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
@@ -51,6 +52,35 @@ func NewOrderService(
 		repo:      repo,
 		publisher: pub,
 	}
+}
+
+// AutocompleteOrder handles order autocomplete suggestions. The
+// repository returns the matched orders; the handler only validates the
+// request and maps the suggestions to the response.
+func (s *OrderService) AutocompleteOrder(
+	ctx context.Context,
+	rdr *order.AutocompleteParameters,
+) (*order.OrderSuggestionCollection, error) {
+	if err := protovalidate.Validate(rdr); err != nil {
+		return nil, aphgrpc.HandleInvalidParamError(ctx, err)
+	}
+	coll := &order.OrderSuggestionCollection{Meta: &order.Meta{}}
+	attrs := rdr.GetData().GetAttributes()
+	sugs, err := s.repo.Autocomplete(attrs.GetQuery(), int(attrs.GetLimit()))
+	if err != nil {
+		return coll, aphgrpc.HandleGetError(ctx, err)
+	}
+	for _, sug := range sugs {
+		coll.Data = append(coll.Data, &order.OrderSuggestion{
+			Id:          sug.ID,
+			Field:       sug.Field,
+			DisplayText: sug.DisplayText,
+			Score:       sug.Score,
+		})
+	}
+	coll.Meta.Total = int64(len(coll.Data))
+
+	return coll, nil
 }
 
 // GetOrder handles getting an order by ID.

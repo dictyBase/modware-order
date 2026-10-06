@@ -32,6 +32,11 @@ type stubRepository struct {
 	doc  *model.OrderDoc
 	docs []*model.OrderDoc
 	err  error
+	// autocomplete state: canned suggestions plus the last captured
+	// arguments, so tests can assert the pass-through behavior.
+	sugs    []*repository.Suggestion
+	acQuery string
+	acLimit int
 }
 
 func (s *stubRepository) GetOrder(_ string) (*model.OrderDoc, error) {
@@ -63,10 +68,13 @@ func (s *stubRepository) ClearOrders() error {
 }
 
 func (s *stubRepository) Autocomplete(
-	_ string,
-	_ int,
+	query string,
+	limit int,
 ) ([]*repository.Suggestion, error) {
-	return nil, s.err
+	s.acQuery = query
+	s.acLimit = limit
+
+	return s.sugs, s.err
 }
 
 // stubPublisher records the subjects it was asked to publish.
