@@ -6,7 +6,7 @@
 ![Last commit](https://badgen.net/github/last-commit/dictyBase/modware-order/develop)   
 [![Funding](https://badgen.net/badge/Funding/Rex%20L%20Chisholm,dictyBase,DCR/yellow?list=|)](https://reporter.nih.gov/project-details/10024726)
 
-dictyBase API server to manage order of biological stocks. The API server supports gRPC protocol for data exchange.
+This service manages stock orders for dictyBase. It serves the gRPC protocol. It stores orders in an ArangoDB database. It publishes order events to NATS.
 
 ## Usage
 
@@ -64,6 +64,24 @@ There is only one collection, and its default name is **stock_order**.
 
 The protocol buffer definitions and service apis are documented
 [here](https://github.com/dictyBase/dictybaseapis/blob/master/dictybase/order/order.proto).
+
+## Autocomplete search
+
+The order service provides an autocomplete rpc. The client sends at
+least 3 characters. The server returns at most 5 suggestions. Each
+suggestion contains the order id, the matched field, the display text
+and the score.
+
+The server matches two ways:
+
+- Prefix match. The field value starts with the typed text. Example:
+  `app` finds `Apple Inc`.
+- Fuzzy match. The field value is similar to the typed text. Example:
+  `aple` still finds `Apple Inc`.
+
+Prefix matches rank above fuzzy matches. The search uses an
+ArangoSearch view with two analyzers over the order fields. The server
+creates the view and the analyzers at start.
 
 # Misc badges
 ![Issues](https://badgen.net/github/issues/dictyBase/modware-order)
