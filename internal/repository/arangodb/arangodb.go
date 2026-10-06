@@ -19,10 +19,11 @@ type arangorepository struct {
 	sess     *manager.Session
 	database *manager.Database
 	sorder   driver.Collection
-	// searchOnce guards the one-time creation of the autocomplete
-	// analyzers and view; searchErr captures the outcome.
-	searchOnce sync.Once
-	searchErr  error
+	// searchMu guards the one-time creation of the autocomplete
+	// analyzers and view. searchInit marks success only; a failed
+	// attempt stays unmarked so the next call retries.
+	searchMu   sync.Mutex
+	searchInit bool
 }
 
 // NewOrderRepo acts as constructor for database.

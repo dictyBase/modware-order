@@ -202,3 +202,95 @@ func TestAutocomplete(t *testing.T) { //nolint:funlen,paralleltest // sequential
 	req.Equal(sugFieldPurchaseOrderNum, sugs[0].Field, "should report the PO field")
 	req.Equal("PO-2026-0007", sugs[0].DisplayText, "should report the PO number")
 }
+
+func TestAutocompleteRanksBestMatchFirst(t *testing.T) { //nolint:paralleltest // sequential: owns the collection
+	req := require.New(t)
+	repo, err := NewOrderRepo(getConnectParams(), collection)
+	req.NoErrorf(err, "expect no error, received %s", err)
+	req.NoError(repo.ClearOrders(), "failed to clear orders at start")
+	defer func() { _ = repo.ClearOrders() }()
+	// Seven fuzzy candidates for the query "aple"; the short value
+	// "Apple" scores highest but the index enumerates the long
+	// "Apple Organization" documents first.
+	fixtures := make([]autocompleteFixture, 0, 7)
+	for idx := range 6 {
+		fixtures = append(fixtures, autocompleteFixture{
+			po:         fmt.Sprintf("XX-ORG-%03d", idx),
+			first:      fmt.Sprintf("Organizer%d", idx),
+			last:       "Appleseed",
+			org:        fmt.Sprintf("Apple Organization %d", idx),
+			payerFirst: fmt.Sprintf("Sponsor%d", idx),
+			payerLast:  "Appleseed",
+			payerOrg:   fmt.Sprintf("Apple Organization %d", idx),
+		})
+	}
+	fixtures = append(fixtures, autocompleteFixture{
+		po: "XX-BEST-001", first: "Al", last: "Pace", org: "Apple",
+		payerFirst: "Al", payerLast: "Pace", payerOrg: "Apple",
+	})
+	for _, fixt := range fixtures {
+		_, err := repo.AddOrder(newAutocompleteOrder(fixt))
+		req.NoErrorf(err, "expect no error, received %s", err)
+	}
+
+	var pollLen int
+	req.Eventually(func() bool {
+		sugs, err := repo.Autocomplete("aple", 2)
+		pollLen = len(sugs)
+		if err != nil {
+			return false
+		}
+		return pollLen >= 2
+	}, 15*time.Second, 500*time.Millisecond,
+		"view should return indexed orders, last=%d", pollLen)
+
+	// The per-branch sort must bring the strongest match into the
+	// truncated candidate window.
+	sugs, err := repo.Autocomplete("aple", 2)
+	req.NoError(err)
+	req.Len(sugs, 2, "should honor the requested limit")
+	req.Equal("Apple", sugs[0].DisplayText,
+		"the strongest match must rank first, not the first indexed candidate")
+}
+
+func TestAutocompleteRetriesFailedInit(t *testing.T) { //nolint:paralleltest // sequential: owns the collection
+	req := require.New(t)
+	mainRepo, err := NewOrderRepo(getConnectParams(), collection)
+	req.NoErrorf(err, "expect no error, received %s", err)
+	impl, ok := mainRepo.(*arangorepository)
+	req.True(ok, "expected the arangodb implementation")
+	_, err = mainRepo.AddOrder(newAutocompleteOrder(autocompleteFixture{
+		po: "PO-RET-0001", first: "Rita", last: "Retry", org: "Retry Corp",
+		payerFirst: "Rex", payerLast: "Retry", payerOrg: "Retry Corp",
+	}))
+	req.NoErrorf(err, "expect no error, received %s", err)
+
+	// A database handle that dies before initialization makes the first
+	// attempt fail; the repository must not cache the failure.
+	tmpName := "ac_retry_" + RandString(6)
+	req.NoError(impl.sess.CreateDB(tmpName, nil))
+	deadDB, err := impl.sess.DB(tmpName)
+	req.NoErrorf(err, "expect no error, received %s", err)
+	req.NoError(deadDB.Drop(), "failed to drop the temporary database")
+	retryRepo := &arangorepository{
+		sess:     impl.sess,
+		database: deadDB,
+		sorder:   impl.sorder,
+	}
+	_, err = retryRepo.Autocomplete("po-ret", 5)
+	req.Error(err, "first call must fail on the dropped database")
+
+	// Heal the handle: the next call must retry initialization instead
+	// of returning the saved error.
+	retryRepo.database = impl.database
+	var pollLen int
+	req.Eventually(func() bool {
+		sugs, err := retryRepo.Autocomplete("po-ret", 5)
+		pollLen = len(sugs)
+		if err != nil {
+			return false
+		}
+		return pollLen >= 1
+	}, 15*time.Second, 500*time.Millisecond,
+		"retried initialization must succeed, last=%d", pollLen)
+}
