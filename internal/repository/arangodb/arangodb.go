@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	driver "github.com/arangodb/go-driver"
@@ -19,11 +18,6 @@ type arangorepository struct {
 	sess     *manager.Session
 	database *manager.Database
 	sorder   driver.Collection
-	// searchMu guards the one-time creation of the autocomplete
-	// analyzers and view. searchInit marks success only; a failed
-	// attempt stays unmarked so the next call retries.
-	searchMu   sync.Mutex
-	searchInit bool
 }
 
 // NewOrderRepo acts as constructor for database.
@@ -49,6 +43,12 @@ func NewOrderRepo(
 		)
 	}
 	arp.sorder = sorderc
+	// Create the autocomplete search assets right after the collection
+	// so a misconfiguration fails at startup instead of on the first
+	// request. All operations are idempotent.
+	if err := arp.ensureSearch(context.Background()); err != nil {
+		return arp, fmt.Errorf("error in ensuring search assets %s", err)
+	}
 
 	return arp, nil
 }
