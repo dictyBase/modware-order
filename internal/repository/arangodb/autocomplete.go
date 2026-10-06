@@ -202,33 +202,11 @@ func toSuggestions(rows []suggestionRow) []*repository.Suggestion {
 	return out
 }
 
-// ensureSearchOnce creates the search assets at most once per successful
-// attempt. The mutex serializes concurrent callers; a failed attempt
-// stays unmarked so the next call retries instead of returning a cached
-// error forever.
-func (ar *arangorepository) ensureSearchOnce(ctx context.Context) error {
-	ar.searchMu.Lock()
-	defer ar.searchMu.Unlock()
-	if ar.searchInit {
-		return nil
-	}
-	if err := ar.ensureSearch(ctx); err != nil {
-		return err
-	}
-	ar.searchInit = true
-
-	return nil
-}
-
-// Autocomplete suggests orders for a partial search text. The first
-// successful call creates the search analyzers and the view; later calls
-// reuse them.
+// Autocomplete suggests orders for a partial search text. The search
+// assets were created when the repository was constructed.
 func (ar *arangorepository) Autocomplete(query string, limit int) ([]*repository.Suggestion, error) {
 	if limit <= 0 {
 		limit = defaultAutocompleteLimit
-	}
-	if err := ar.ensureSearchOnce(context.Background()); err != nil {
-		return nil, fmt.Errorf("error in ensuring search assets %s", err)
 	}
 	// STARTS_WITH compares the raw query text against the lowercased
 	// document tokens, so the query must be lowercased here; the ngram
