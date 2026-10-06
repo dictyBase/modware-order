@@ -66,3 +66,38 @@ const (
 			RETURN s
 	`
 )
+
+// autocompletePrefixFieldQuery matches one field for exact prefixes.
+// Template verbs: branch variable, field path, analyzer name, field
+// label, field path again.
+const autocompletePrefixFieldQuery = `LET %s = (
+	FOR d IN orders_search
+		SEARCH ANALYZER(STARTS_WITH(d.%s, @q), %q)
+		LIMIT @limit
+		RETURN { k: d._key, f: %q, v: d.%s, s: 1000 + BM25(d) }
+)`
+
+// autocompleteNgramFieldQuery matches one field for fuzzy n-gram
+// similarity with the same projection as the prefix query.
+const autocompleteNgramFieldQuery = `LET %s = (
+	FOR d IN orders_search
+		SEARCH NGRAM_MATCH(d.%s, @q, @th, %q)
+		LIMIT @limit
+		RETURN { k: d._key, f: %q, v: d.%s, s: BM25(d) }
+)`
+
+// autocompleteMergeQuery collects the per-field matches, keeps the best
+// scoring match per order and returns the top entries. The field paths
+// must stay in sync with the links of the view built in autocomplete.go.
+const autocompleteMergeQuery = `LET hits = FLATTEN([%s])
+LET best = (
+	FOR x IN hits
+		COLLECT key = x.k INTO grp = x
+		LET top = FIRST(FOR m IN grp SORT m.s DESC, m.f ASC RETURN m)
+		RETURN top
+)
+FOR x IN best
+	SORT x.s DESC, x.k ASC
+	LIMIT @limit
+	RETURN x
+`

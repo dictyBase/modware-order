@@ -62,6 +62,13 @@ func (s *stubRepository) ClearOrders() error {
 	return s.err
 }
 
+func (s *stubRepository) Autocomplete(
+	_ string,
+	_ int,
+) ([]*repository.Suggestion, error) {
+	return nil, s.err
+}
+
 // stubPublisher records the subjects it was asked to publish.
 type stubPublisher struct {
 	subjects []string
