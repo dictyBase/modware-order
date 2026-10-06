@@ -73,6 +73,7 @@ const (
 const autocompletePrefixFieldQuery = `LET %s = (
 	FOR d IN orders_search
 		SEARCH ANALYZER(STARTS_WITH(d.%s, @q), %q)
+		SORT BM25(d) DESC, d._key ASC
 		LIMIT @limit
 		RETURN { k: d._key, f: %q, v: d.%s, s: 1000 + BM25(d) }
 )`
@@ -82,6 +83,7 @@ const autocompletePrefixFieldQuery = `LET %s = (
 const autocompleteNgramFieldQuery = `LET %s = (
 	FOR d IN orders_search
 		SEARCH NGRAM_MATCH(d.%s, @q, @th, %q)
+		SORT BM25(d) DESC, d._key ASC
 		LIMIT @limit
 		RETURN { k: d._key, f: %q, v: d.%s, s: BM25(d) }
 )`
