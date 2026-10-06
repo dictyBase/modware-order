@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/dictyBase/arangomanager/testarango"
 	"github.com/dictyBase/go-genproto/dictybaseapis/order"
@@ -508,4 +509,63 @@ func TestUpdateOrderWithoutAttributesReturnsInvalidArgument(t *testing.T) {
 		},
 	)
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
+}
+
+func TestAutocompleteOrderReturnsStoredSuggestions(t *testing.T) {
+	t.Parallel()
+	req := require.New(t)
+	env := newArangoTestEnv(t)
+	input := newOrderInput()
+	input.Data.Attributes.PurchaseOrderNum = "PO-2026-0012"
+	input.Data.Attributes.ConsumerInfo = &order.UserInfo{
+		FirstName:    "Anna",
+		LastName:     "Bell",
+		Organization: "Apple Inc",
+	}
+	input.Data.Attributes.PayerInfo = &order.UserInfo{
+		FirstName:    "Peter",
+		LastName:     "Payne",
+		Organization: "Pineapple Labs",
+	}
+	created, err := env.client.CreateOrder(context.Background(), input)
+	req.NoErrorf(err, "expect no error, received %s", err)
+	req.NotEmpty(created.Data.Id, "should return the created order key")
+
+	acRequest := &order.AutocompleteParameters{
+		Data: &order.AutocompleteParameters_Data{
+			Type: orderResourceType,
+			Attributes: &order.AutocompleteAttributes{
+				Query: "app",
+				Limit: 5,
+			},
+		},
+	}
+	// The view commits in the background, so the suggestion appears
+	// after a short delay.
+	req.Eventually(func() bool {
+		coll, err := env.client.AutocompleteOrder(context.Background(), acRequest)
+		return err == nil && len(coll.Data) >= 1
+	}, 15*time.Second, 500*time.Millisecond, "view should index the created order")
+
+	coll, err := env.client.AutocompleteOrder(context.Background(), acRequest)
+	req.NoError(err)
+	texts := make([]string, 0, len(coll.Data))
+	for _, sug := range coll.Data {
+		texts = append(texts, sug.DisplayText)
+	}
+	req.Contains(texts, "Apple Inc", "should match the consumer organization")
+	req.Equal(int64(len(coll.Data)), coll.Meta.Total, "total should match the rows")
+
+	// Short queries are rejected at the service boundary.
+	_, err = env.client.AutocompleteOrder(context.Background(), &order.AutocompleteParameters{
+		Data: &order.AutocompleteParameters_Data{
+			Type: orderResourceType,
+			Attributes: &order.AutocompleteAttributes{
+				Query: "ap",
+				Limit: 5,
+			},
+		},
+	})
+	req.Error(err, "query below the minimum must be rejected")
+	req.Equal(codes.InvalidArgument, status.Code(err))
 }
