@@ -29,6 +29,9 @@ var (
 	collection = "stock_orders"
 )
 
+// stockItemID is the fixture item identifier shared across tests.
+const stockItemID = "DBS2109858"
+
 func stringWithCharset(length int, charset string) string {
 	byt := make([]byte, length)
 	for i := range length {
@@ -107,7 +110,7 @@ func newTestOrder(consumer string) *order.NewOrder {
 				Consumer:         consumer,
 				Payer:            "dr.van.nostrand@gmail.com",
 				Purchaser:        "dr.van.nostrand@gmail.com",
-				Items:            []string{"DBS2109858", "DBP8349822"},
+				Items:            []string{stockItemID, "DBP8349822"},
 				ConsumerInfo:     newTestUserInfo("art"),
 				PayerInfo:        newTestUserInfo("nostrand"),
 			},
@@ -483,7 +486,7 @@ func TestLoadOrder(t *testing.T) {
 				CreatedAt: aphgrpc.TimestampProto(tme),
 				UpdatedAt: aphgrpc.TimestampProto(tme),
 				Purchaser: "super@c.org",
-				Items:     []string{"DBS2109858", "DBP8349822"},
+				Items:     []string{stockItemID, "DBP8349822"},
 			},
 		},
 	}
