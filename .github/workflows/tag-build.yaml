@@ -33,3 +33,4 @@ jobs:
       kubectl_version: ${{ vars.PROD_KUBECTL_VERSION }}
       pulumi_version: ${{ vars.PROD_PULUMI_VERSION }}
       environment: production
+      runner: backend
