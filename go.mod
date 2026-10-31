@@ -7,7 +7,7 @@ require (
 	github.com/dictyBase/arangomanager v0.8.0
 	github.com/dictyBase/go-genproto v0.0.0-20261006212536-10fed711ce06
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
-	github.com/nats-io/nats.go v1.54.0
+	github.com/nats-io/nats.go v1.55.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli v1.22.17
